@@ -1,0 +1,27 @@
+{
+  "name": "donuts",
+  "version": "0.1",
+  "description": "Donut slice experiment",
+  "main": "index.js",
+  "author": "Andis Roze",
+  "license": "MIT",
+  "scripts": {
+    "dist": "webpack --config ./webpack.config.js",
+    "tslint": "tslint 'src/**/*.ts' --format stylish",
+    "watch": "webpack --watch",
+    "start": "webpack-dev-server"
+  },
+  "devDependencies": {
+    "jest": "^22.4.2",
+    "ts-loader": "^3.5.0",
+    "tslint": "^5.9.1",
+    "tslint-eslint-rules": "^5.0.0",
+    "tslint-loader": "^3.5.3",
+    "typescript": "^2.7.2",
+    "webpack": "^3.11.0",
+    "webpack-dev-server": "^2.11.1"
+  },
+  "engines": {
+    "yarn": "^1.3.2"
+  }
+}
