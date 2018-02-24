@@ -10,7 +10,8 @@
     "tslint": "tslint 'src/**/*.ts' --format stylish",
     "watch": "webpack --watch",
     "start": "webpack-dev-server",
-    "test": "jest"
+    "test": "jest",
+    "deploy": "./scripts/publish.sh"
   },
   "jest": {
     "transform": {
