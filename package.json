@@ -9,10 +9,22 @@
     "dist": "webpack --config ./webpack.config.js",
     "tslint": "tslint 'src/**/*.ts' --format stylish",
     "watch": "webpack --watch",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "test": "jest"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
+    "testRegex": "src/.*\\.spec\\.tsx?$",
+    "moduleFileExtensions": [
+      "ts"
+    ]
   },
   "devDependencies": {
+    "@types/jest": "^22.1.3",
     "jest": "^22.4.2",
+    "ts-jest": "^22.0.4",
     "ts-loader": "^3.5.0",
     "tslint": "^5.9.1",
     "tslint-eslint-rules": "^5.0.0",
