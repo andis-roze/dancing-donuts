@@ -1,21 +1,18 @@
 import { Donut } from "./Donut";
-
-interface DonutInstance {
-    donut: Donut;
-    startAngle: number;
-    endAngle: number;
-}
+import { getRandomColor, atan2Arc, getAngle, getDistance } from "./utils";
+import { Coords } from "./types";
 
 type ShowFps = (fps: number) => void;
 
 export class DonutContainer {
     private canvas: HTMLCanvasElement;
+    private canvasRect: ClientRect;
     private ctx: CanvasRenderingContext2D | null;
     private donutCountX = 20;
     private donutCountY = 20;
     private donutOuterRadius = 25;
     private donutInnerRadius = 10;
-    private donuts: DonutInstance[] = [];
+    private donuts: Donut[][] = [];
 
     public constructor (canvas: HTMLCanvasElement) {
         const donutDiameter = 2 * this.donutOuterRadius;
@@ -28,31 +25,30 @@ export class DonutContainer {
         this.ctx = canvas.getContext("2d");
         this.canvas.setAttribute("width", canvasWidth);
         this.canvas.setAttribute("height", canvasHeight);
+        this.canvas.addEventListener("click", this.onClick);
 
-        for (let y = 0; y < this.donutCountY; y++) {
-            for (let x = 0; x < this.donutCountX; x++) {
-                const donut = new Donut({
-                    center: {
-                        x: (2 * x + 1) * this.donutOuterRadius,
-                        y: (2 * y + 1) * this.donutOuterRadius
-                    },
+        for (let x = 0; x < this.donutCountX; x++) {
+            this.donuts[x] = [];
+            for (let y = 0; y < this.donutCountY; y++) {
+                const center: Coords = {
+                    x: (2 * x + 1) * this.donutOuterRadius,
+                    y: (2 * y + 1) * this.donutOuterRadius
+                };
+                this.donuts[x][y] = new Donut({
+                    center,
+                    startAngle,
+                    endAngle,
                     color: getRandomColor(),
                     ctx: this.ctx,
                     innerRadius: this.donutInnerRadius,
                     outerRadius: this.donutOuterRadius,
-                });
-
-                this.donuts.push({
-                    donut,
-                    startAngle,
-                    endAngle,
                 });
             }
         }
     }
 
     public run(radiansPerSecond: number, showFps?: ShowFps): void {
-        const FPS = 60;
+        const FPS = 30;
         const INTERVAL = 1000 / FPS;
         let performanceTime = performance.now();
         let performanceDelta = 0;
@@ -67,12 +63,14 @@ export class DonutContainer {
                     showFps(Math.round(1000 / performanceDelta));
                 }
 
-                this.donuts.forEach((donut: DonutInstance, idx: number) => {
-                    this.donuts[idx].startAngle += step;
-                    this.donuts[idx].endAngle += step;
-                    donut.donut.render({
-                        startAngle: donut.startAngle + step,
-                        endAngle: donut.endAngle + step,
+                this.donuts.forEach((row: Donut[], x: number) => {
+                    row.forEach((donut: Donut, y: number) => {
+                        const { startAngle, endAngle } = donut.getProps();
+
+                        donut.render({
+                            startAngle: startAngle + step,
+                            endAngle: endAngle + step,
+                        });
                     });
                 });
             }
@@ -82,15 +80,36 @@ export class DonutContainer {
 
         window.requestAnimationFrame(renderLoop);
     }
-}
 
-function getRandomColor() {
-    const digits = "0123456789ABCDEF";
-    let color = "#";
+    private onClick = (e: MouseEvent) => {
+        if (!this.canvasRect) {
+            this.canvasRect = this.canvas.getBoundingClientRect();
+        }
 
-    for (let i = 0; i < 6; i++) {
-        color += digits[Math.floor(Math.random() * 16)];
+        const clickCoords: Coords = {
+            x: e.pageX - this.canvasRect.left,
+            y: e.pageY - this.canvasRect.top,
+        };
+        const donutCoords = this.getDonutCoords(clickCoords);
+        console.log(this.isDonutHit(this.donuts[donutCoords.x][donutCoords.y], clickCoords));
     }
 
-    return color;
+    private getDonutCoords(coords: Coords): Coords {
+        return {
+            x: Math.floor(coords.x / 2 / this.donutOuterRadius),
+            y: Math.floor(coords.y / 2 / this.donutOuterRadius),
+        };
+    }
+
+    private isDonutHit(donut: Donut, clickCoords: Coords): boolean {
+        const { center, startAngle, endAngle } = donut.getProps();
+        const clickAngle = atan2Arc(getAngle(center, clickCoords));
+        const clickDistance = getDistance(center, clickCoords);
+        console.log({ startAngle, clickAngle, endAngle });
+        console.log({ donutInnerRadius: this.donutInnerRadius, clickDistance, donutOuterRadius: this.donutOuterRadius });
+        return clickAngle >= startAngle
+            && clickAngle <= endAngle
+            && this.donutInnerRadius <= clickDistance
+            && this.donutOuterRadius >= clickDistance;
+    }
 }

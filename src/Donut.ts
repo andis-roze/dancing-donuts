@@ -1,35 +1,41 @@
+import { Coords } from "./types";
+
 interface DonutProps {
-    startAngle?: number;
-    endAngle?: number;
+    startAngle: number;
+    endAngle: number;
     color: string;
     ctx: CanvasRenderingContext2D | null;
-    center: {
-        x: number;
-        y: number;
-    };
+    center: Coords;
     innerRadius: number;
     outerRadius: number;
 }
 
-interface DonutRenderProps {
-    startAngle: number;
-    endAngle: number;
-}
+type Angles = Pick<DonutProps, "startAngle" | "endAngle">;
 
 export class Donut {
+    private static normalizeAngles({ startAngle, endAngle }: Angles): Angles {
+        const doublePI = 2 * Math.PI;
+        return {
+            startAngle: startAngle > doublePI ? startAngle - doublePI : startAngle,
+            endAngle: endAngle > doublePI ? endAngle - doublePI : endAngle,
+        };
+    }
+
     private props: DonutProps;
 
     public constructor(props: DonutProps) {
-        this.props = props;
+        this.props = {
+            ...props,
+            ...Donut.normalizeAngles(props),
+        };
     }
 
-    public render({ startAngle, endAngle }: DonutRenderProps): void {
+    public render({ startAngle, endAngle }: Angles): void {
         const { ctx, center, outerRadius, innerRadius } = this.props;
 
         this.props = {
             ...this.props,
-            startAngle,
-            endAngle,
+            ...Donut.normalizeAngles({ startAngle, endAngle }),
         };
 
         if (ctx) {
@@ -50,6 +56,10 @@ export class Donut {
             ctx.stroke();
             ctx.restore();
         }
+    }
+
+    public getProps () {
+        return this.props;
     }
 
     public setColor(color: string): void {
