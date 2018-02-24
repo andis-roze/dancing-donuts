@@ -6,6 +6,8 @@ interface DonutInstance {
     endAngle: number;
 }
 
+type ShowFps = (fps: number) => void;
+
 export class DonutContainer {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D | null;
@@ -14,7 +16,6 @@ export class DonutContainer {
     private donutOuterRadius = 25;
     private donutInnerRadius = 10;
     private donuts: DonutInstance[] = [];
-    private animationFrameId: number;
 
     public constructor (canvas: HTMLCanvasElement) {
         const donutDiameter = 2 * this.donutOuterRadius;
@@ -50,16 +51,36 @@ export class DonutContainer {
         }
     }
 
-    public run(): void {
-        window.cancelAnimationFrame(this.animationFrameId);
-        this.animationFrameId = window.requestAnimationFrame(() => {
-            this.donuts.forEach((donutInstance: DonutInstance) => {
-                donutInstance.donut.render({
-                    startAngle: donutInstance.startAngle,
-                    endAngle: donutInstance.endAngle,
+    public run(radiansPerSecond: number, showFps?: ShowFps): void {
+        const FPS = 60;
+        const INTERVAL = 1000 / FPS;
+        let performanceTime = performance.now();
+        let performanceDelta = 0;
+        const renderLoop = (time: number) => {
+            performanceDelta = time - performanceTime;
+
+            if (performanceDelta > INTERVAL) {
+                const step = radiansPerSecond * performanceDelta / 1000;
+                performanceTime = time - (performanceDelta % INTERVAL);
+
+                if (showFps) {
+                    showFps(Math.round(1000 / performanceDelta));
+                }
+
+                this.donuts.forEach((donut: DonutInstance, idx: number) => {
+                    this.donuts[idx].startAngle += step;
+                    this.donuts[idx].endAngle += step;
+                    donut.donut.render({
+                        startAngle: donut.startAngle + step,
+                        endAngle: donut.endAngle + step,
+                    });
                 });
-            });
-        });
+            }
+
+            window.requestAnimationFrame(renderLoop);
+        };
+
+        window.requestAnimationFrame(renderLoop);
     }
 }
 
