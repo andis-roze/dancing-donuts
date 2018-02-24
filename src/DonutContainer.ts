@@ -4,20 +4,40 @@ import { Coords } from "./types";
 
 type ShowFps = (fps: number) => void;
 
+interface DonutContainerProps {
+    donutCountX?: number;
+    donutCountY?: number;
+    donutOuterRadius?: number;
+    donutInnerRadius?: number;
+    fps?: number;
+}
+
+interface DonutContainerDefaultProps {
+    donutCountX: number;
+    donutCountY: number;
+    donutOuterRadius: number;
+    donutInnerRadius: number;
+    fps: number;
+}
+
 export class DonutContainer {
     private canvas: HTMLCanvasElement;
     private canvasRect: ClientRect;
     private ctx: CanvasRenderingContext2D | null;
-    private donutCountX = 20;
-    private donutCountY = 20;
-    private donutOuterRadius = 25;
-    private donutInnerRadius = 10;
     private donuts: Donut[][] = [];
+    private props: DonutContainerDefaultProps = {
+        donutCountX: 20,
+        donutCountY: 20,
+        donutOuterRadius: 25,
+        donutInnerRadius: 10,
+        fps: 30,
+    };
 
-    public constructor (canvas: HTMLCanvasElement) {
-        const donutDiameter = 2 * this.donutOuterRadius;
-        const canvasWidth = `${this.donutCountX * donutDiameter}`;
-        const canvasHeight = `${this.donutCountY * donutDiameter}`;
+    public constructor (canvas: HTMLCanvasElement, props?: DonutContainerProps) {
+        this.props = { ...this.props, ...props };
+        const donutDiameter = 2 * this.props.donutOuterRadius;
+        const canvasWidth = `${this.props.donutCountX * donutDiameter}`;
+        const canvasHeight = `${this.props.donutCountY * donutDiameter}`;
         const startAngle = Math.PI * 0.5;
         const endAngle = Math.PI * 2;
 
@@ -27,12 +47,12 @@ export class DonutContainer {
         this.canvas.setAttribute("height", canvasHeight);
         this.canvas.addEventListener("click", this.onClick);
 
-        for (let x = 0; x < this.donutCountX; x++) {
+        for (let x = 0; x < this.props.donutCountX; x++) {
             this.donuts[x] = [];
-            for (let y = 0; y < this.donutCountY; y++) {
+            for (let y = 0; y < this.props.donutCountY; y++) {
                 const center: Coords = {
-                    x: (2 * x + 1) * this.donutOuterRadius,
-                    y: (2 * y + 1) * this.donutOuterRadius
+                    x: (2 * x + 1) * this.props.donutOuterRadius,
+                    y: (2 * y + 1) * this.props.donutOuterRadius
                 };
                 this.donuts[x][y] = new Donut({
                     center,
@@ -40,16 +60,15 @@ export class DonutContainer {
                     endAngle,
                     color: getRandomColor(),
                     ctx: this.ctx,
-                    innerRadius: this.donutInnerRadius,
-                    outerRadius: this.donutOuterRadius,
+                    innerRadius: this.props.donutInnerRadius,
+                    outerRadius: this.props.donutOuterRadius,
                 });
             }
         }
     }
 
     public run(radiansPerSecond: number, showFps?: ShowFps): void {
-        const FPS = 30;
-        const INTERVAL = 1000 / FPS;
+        const INTERVAL = 1000 / this.props.fps;
         let performanceTime = performance.now();
         let performanceDelta = 0;
         const renderLoop = (time: number) => {
@@ -96,8 +115,8 @@ export class DonutContainer {
 
     private getDonutCoords(coords: Coords): Coords {
         return {
-            x: Math.floor(coords.x / 2 / this.donutOuterRadius),
-            y: Math.floor(coords.y / 2 / this.donutOuterRadius),
+            x: Math.floor(coords.x / 2 / this.props.donutOuterRadius),
+            y: Math.floor(coords.y / 2 / this.props.donutOuterRadius),
         };
     }
 
@@ -106,10 +125,10 @@ export class DonutContainer {
         const clickAngle = atan2Arc(getAngle(center, clickCoords));
         const clickDistance = getDistance(center, clickCoords);
         console.log({ startAngle, clickAngle, endAngle });
-        console.log({ donutInnerRadius: this.donutInnerRadius, clickDistance, donutOuterRadius: this.donutOuterRadius });
+        console.log({ donutInnerRadius: this.props.donutInnerRadius, clickDistance, donutOuterRadius: this.props.donutOuterRadius });
         return clickAngle >= startAngle
             && clickAngle <= endAngle
-            && this.donutInnerRadius <= clickDistance
-            && this.donutOuterRadius >= clickDistance;
+            && this.props.donutInnerRadius <= clickDistance
+            && this.props.donutOuterRadius >= clickDistance;
     }
 }
