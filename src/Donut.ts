@@ -1,6 +1,7 @@
-import { Coords } from "./types";
+import { ClockWise, Coords } from "./types";
 
 interface DonutProps {
+    clockWise: ClockWise;
     startAngle: number;
     endAngle: number;
     color: string;
@@ -16,8 +17,16 @@ export class Donut {
     private static normalizeAngles({ startAngle, endAngle }: Angles): Angles {
         const doublePI = 2 * Math.PI;
         return {
-            startAngle: startAngle > doublePI ? startAngle - doublePI : startAngle,
-            endAngle: endAngle > doublePI ? endAngle - doublePI : endAngle,
+            startAngle: startAngle > doublePI
+                ? startAngle - doublePI
+                : startAngle < 0
+                    ? startAngle + doublePI
+                    : startAngle,
+            endAngle: endAngle > doublePI
+                ? endAngle - doublePI
+                : endAngle < 0
+                    ? endAngle + doublePI
+                    : endAngle,
         };
     }
 
@@ -28,6 +37,8 @@ export class Donut {
             ...props,
             ...Donut.normalizeAngles(props),
         };
+
+        this.render({ startAngle: props.startAngle, endAngle: props.endAngle });
     }
 
     public render({ startAngle, endAngle }: Angles): void {
@@ -63,6 +74,11 @@ export class Donut {
     }
 
     public setColor(color: string): void {
-        this.props.color = color;
+        this.props = { ...this.props, color };
+        this.render({ startAngle: this.props.startAngle, endAngle: this.props.endAngle });
+    }
+
+    public toggleClockwise(): void {
+        this.props.clockWise = this.props.clockWise > 0 ? -1 : 1;
     }
 }
