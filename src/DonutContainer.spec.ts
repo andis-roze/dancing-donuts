@@ -1,7 +1,7 @@
 import { DonutContainer } from "./DonutContainer";
 
 describe("DonutContainer", () => {
-    const getMouseClickEvent = ({ pageX, pageY } : { pageX: number, pageY: number }) => {
+    const getMouseClickEvent = ({ pageX, pageY }: { pageX: number, pageY: number }) => {
         const clickEvent = new MouseEvent("click");
         Object.defineProperties(clickEvent, {
             pageX: {

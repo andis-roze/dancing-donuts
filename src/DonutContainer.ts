@@ -1,8 +1,6 @@
-import { Donut } from "./Donut";
+import { Donut, DonutProps } from "./Donut";
 import { getRandomColor, atan2Arc, getAngle, getDistance } from "./utils";
 import { ClockWise, Coords } from "./types";
-
-type ShowFps = (fps: number) => void;
 
 interface DonutContainerProps {
     clockWise?: ClockWise;
@@ -34,8 +32,8 @@ export class DonutContainer {
     } | undefined;
     public donuts: Donut[][] = [];
     private canvas: HTMLCanvasElement;
-    private canvasRect: ClientRect;
     private ctx: CanvasRenderingContext2D | null;
+    private canvasRect: ClientRect;
     private props: DonutContainerDefaultProps = {
         clockWise: 1,
         startAngle: Math.PI * 0.5,
@@ -72,7 +70,6 @@ export class DonutContainer {
                     startAngle: this.props.startAngle,
                     endAngle: this.props.endAngle,
                     color: getRandomColor(),
-                    ctx: this.ctx,
                     innerRadius: this.props.donutInnerRadius,
                     outerRadius: this.props.donutOuterRadius,
                 });
@@ -80,37 +77,51 @@ export class DonutContainer {
         }
     }
 
-    public run(radiansPerSecond: number, showFps?: ShowFps): void {
-        const INTERVAL = 1000 / this.props.fps;
-        let performanceTime = performance.now();
-        let performanceDelta = 0;
+    public run(radiansPerSecond: number): void {
+        let lastRender = performance.now();
+        let pendingAnimationFrame: number | undefined;
         const renderLoop = (time: number) => {
-            performanceDelta = time - performanceTime;
+            if (pendingAnimationFrame) {
+                window.cancelAnimationFrame(pendingAnimationFrame);
+                pendingAnimationFrame = undefined;
+            }
+            const delta = (time - lastRender) / 1000;
+            lastRender = time;
 
-            if (performanceDelta > INTERVAL) {
-                const step = radiansPerSecond * performanceDelta / 1000;
-                performanceTime = time - (performanceDelta % INTERVAL);
+            const step = radiansPerSecond * delta;
 
-                if (showFps) {
-                    showFps(Math.round(1000 / performanceDelta));
-                }
-
-                this.donuts.forEach((row: Donut[], x: number) => {
-                    row.forEach((donut: Donut, y: number) => {
-                        const { clockWise, startAngle, endAngle } = donut.getProps();
-
-                        donut.render({
-                            startAngle: startAngle + clockWise * step,
-                            endAngle: endAngle + clockWise * step,
-                        });
-                    });
-                });
+            if (this.ctx) {
+                this.ctx.save();
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             }
 
-            window.requestAnimationFrame(renderLoop);
+            this.donuts.forEach((row: Donut[]) => {
+                row.forEach((donut: Donut) => {
+                    if (this.ctx) {
+                        const {
+                            canvas,
+                            clockWise,
+                            center,
+                        }: DonutProps & { canvas: HTMLCanvasElement } = donut.getProps();
+
+                        donut.rotate(clockWise * step);
+                        this.ctx.drawImage(
+                            canvas,
+                            center.x - this.props.donutOuterRadius,
+                            center.y - this.props.donutOuterRadius
+                        );
+                    }
+                });
+            });
+
+            if (this.ctx) {
+                this.ctx.restore();
+            }
+
+            pendingAnimationFrame = window.requestAnimationFrame(renderLoop);
         };
 
-        window.requestAnimationFrame(renderLoop);
+        pendingAnimationFrame = window.requestAnimationFrame(renderLoop);
     }
 
     private onClick = (e: MouseEvent) => {
@@ -142,7 +153,7 @@ export class DonutContainer {
     }
 
     private isDonutHit(donut: Donut, clickCoords: Coords): boolean {
-        const props = donut.getProps();
+        const props: DonutProps & { canvas: HTMLCanvasElement } = donut.getProps();
         const clickDistance = getDistance(props.center, clickCoords);
         const startIsBigger = props.startAngle > props.endAngle;
         let clickAngle = atan2Arc(getAngle(props.center, clickCoords));
