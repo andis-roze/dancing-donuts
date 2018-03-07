@@ -71,6 +71,7 @@ export class DonutContainer {
                     center,
                     startAngle: this.props.startAngle,
                     endAngle: this.props.endAngle,
+                    rotationAngle: 0,
                     color: getRandomColor(),
                     ctx: this.ctx,
                     innerRadius: this.props.donutInnerRadius,
@@ -97,12 +98,9 @@ export class DonutContainer {
 
                 this.donuts.forEach((row: Donut[], x: number) => {
                     row.forEach((donut: Donut, y: number) => {
-                        const { clockWise, startAngle, endAngle } = donut.getProps();
+                        const { clockWise } = donut.getProps();
 
-                        donut.render({
-                            startAngle: startAngle + clockWise * step,
-                            endAngle: endAngle + clockWise * step,
-                        });
+                        donut.rotate(clockWise * step);
                     });
                 });
             }
