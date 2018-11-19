@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "./dist/",
     "sourceMap": true,
-    "module": "commonjs",
+    "module": "es6",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "noUnusedLocals": true,
@@ -11,6 +11,7 @@
     "allowSyntheticDefaultImports": false,
     "suppressImplicitAnyIndexErrors": false,
     "allowJs": false,
+    "lib": [ "es6", "dom" ],
     "target": "es5",
     "newLine": "LF",
     "baseUrl": "./"
@@ -19,7 +20,6 @@
     "src/**/*"
   ],
   "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
+    "node_modules"
   ]
 }
