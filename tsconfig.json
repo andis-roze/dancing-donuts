@@ -14,7 +14,7 @@
     "lib": [ "es6", "dom" ],
     "target": "es5",
     "newLine": "LF",
-    "baseUrl": "./"
+    "baseUrl": "./",
   },
   "include": [
     "src/**/*"
