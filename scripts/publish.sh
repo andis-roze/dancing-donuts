@@ -2,7 +2,7 @@
 
 git checkout gh-pages
 git rebase master
-yarn dist
+yarn dist:dev
 cp ./dist/* ./
 git add .
 git commit --amend

@@ -1,55 +1,52 @@
-import { Donut, DonutProps } from "./Donut";
-import { getRandomColor, atan2Arc, getAngle, getDistance } from "./utils";
 import { ClockWise, Coords } from "./types";
+import {
+    getRandomColor,
+    getRandomDirection,
+    reduceAngle,
+    getDistance,
+    atan2Arc,
+    getAngle,
+    getRandomArbitrary,
+} from "./utils";
+import { Donut } from "./Donut";
 
-interface DonutContainerProps {
-    clockWise?: ClockWise;
-    startAngle?: number;
-    endAngle?: number;
-    donutCountX?: number;
-    donutCountY?: number;
-    donutOuterRadius?: number;
-    donutInnerRadius?: number;
-    fps?: number;
-}
-
-interface DonutContainerDefaultProps {
-    clockWise: ClockWise;
-    startAngle: number;
-    endAngle: number;
+export interface DonutContainerProps {
     donutCountX: number;
     donutCountY: number;
     donutOuterRadius: number;
     donutInnerRadius: number;
-    fps: number;
+}
+
+export interface DonutState {
+    donut: Donut;
+    clockwise: ClockWise;
+    rotationAngle: number;
+    startAngle: number;
+    endAngle: number;
+    center: Coords;
 }
 
 export class DonutContainer {
-    public lastDonutHit: {
-        donut: Donut,
-        clickCoords: Coords,
-        donutCoords: Coords,
-    } | undefined;
-    public donuts: Donut[][] = [];
+    public donuts: DonutState[][] = [];
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D | null;
     private canvasRect: ClientRect;
-    private props: DonutContainerDefaultProps = {
-        clockWise: 1,
-        startAngle: Math.PI * 0.5,
-        endAngle: Math.PI * 2,
-        donutCountX: 20,
-        donutCountY: 20,
-        donutOuterRadius: 25,
-        donutInnerRadius: 10,
-        fps: 60,
-    };
+    private donutCountX: number;
+    private donutCountY: number;
+    private donutOuterRadius: number;
+    private donutInnerRadius: number;
 
-    public constructor (canvas: HTMLCanvasElement, props?: DonutContainerProps) {
-        this.props = { ...this.props, ...props };
-        const donutDiameter = 2 * this.props.donutOuterRadius;
-        const canvasWidth = `${this.props.donutCountX * donutDiameter}`;
-        const canvasHeight = `${this.props.donutCountY * donutDiameter}`;
+    constructor(canvas: HTMLCanvasElement, props: Partial<DonutContainerProps>) {
+        this.donutCountX = props.donutCountX || 20;
+        this.donutCountY = props.donutCountY || 20;
+        this.donutOuterRadius = props.donutOuterRadius || 25;
+        this.donutInnerRadius = props.donutInnerRadius || 10;
+
+        const donutDiameter = 2 * this.donutOuterRadius;
+        const canvasWidth = `${this.donutCountX * donutDiameter}`;
+        const canvasHeight = `${this.donutCountY * donutDiameter}`;
+        const startAngle = Math.PI * getRandomArbitrary(0, 1.5);
+        const endAngle = Math.PI * getRandomArbitrary(1.5, 2);
 
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
@@ -57,71 +54,80 @@ export class DonutContainer {
         this.canvas.setAttribute("height", canvasHeight);
         this.canvas.addEventListener("click", this.onClick);
 
-        for (let x = 0; x < this.props.donutCountX; x++) {
+        if (!this.ctx) {
+            throw new Error("Canvas 2d rendering context failed to initialise!");
+        }
+
+        for (let x = 0; x < this.donutCountX; x++) {
             this.donuts[x] = [];
-            for (let y = 0; y < this.props.donutCountY; y++) {
-                const center: Coords = {
-                    x: (2 * x + 1) * this.props.donutOuterRadius,
-                    y: (2 * y + 1) * this.props.donutOuterRadius
+            for (let y = 0; y < this.donutCountY; y++) {
+                this.donuts[x][y] = {
+                    clockwise: getRandomDirection(),
+                    rotationAngle: 0,
+                    startAngle,
+                    endAngle,
+                    center: {
+                        x: (2 * x + 1) * this.donutOuterRadius,
+                        y: (2 * y + 1) * this.donutOuterRadius,
+                    },
+                    donut: new Donut({
+                        startAngle,
+                        endAngle,
+                        color: getRandomColor(),
+                        innerRadius: this.donutInnerRadius,
+                        outerRadius: this.donutOuterRadius,
+                    })
                 };
-                this.donuts[x][y] = new Donut({
-                    clockWise: 1,
-                    center,
-                    startAngle: this.props.startAngle,
-                    endAngle: this.props.endAngle,
-                    color: getRandomColor(),
-                    innerRadius: this.props.donutInnerRadius,
-                    outerRadius: this.props.donutOuterRadius,
-                });
+                this.ctx.drawImage(
+                    this.donuts[x][y].donut.getImage(),
+                    2 * x * this.donutOuterRadius,
+                    2 * y * this.donutOuterRadius
+                );
             }
         }
     }
 
-    public run(radiansPerSecond: number): void {
+    public run(radiansPerSecond: number) {
         let lastRender = performance.now();
-        let pendingAnimationFrame: number | undefined;
         const renderLoop = (time: number) => {
-            if (pendingAnimationFrame) {
-                window.cancelAnimationFrame(pendingAnimationFrame);
-                pendingAnimationFrame = undefined;
+            if (!this.ctx) {
+                throw new Error("Canvas 2d rendering context failed to initialise!");
             }
+
             const delta = (time - lastRender) / 1000;
+            const step = radiansPerSecond * delta;
             lastRender = time;
 
-            const step = radiansPerSecond * delta;
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-            if (this.ctx) {
-                this.ctx.save();
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            }
-
-            this.donuts.forEach((row: Donut[]) => {
-                row.forEach((donut: Donut) => {
-                    if (this.ctx) {
-                        const {
-                            canvas,
-                            clockWise,
-                            center,
-                        }: DonutProps & { canvas: HTMLCanvasElement } = donut.getProps();
-
-                        donut.rotate(clockWise * step);
-                        this.ctx.drawImage(
-                            canvas,
-                            center.x - this.props.donutOuterRadius,
-                            center.y - this.props.donutOuterRadius
-                        );
+            this.donuts.forEach((row: DonutState[], x: number) => {
+                row.forEach((donutState: DonutState, y: number) => {
+                    if (!this.ctx) {
+                        throw new Error("Canvas 2d rendering context failed to initialise!");
                     }
+
+                    donutState.rotationAngle = reduceAngle(donutState.rotationAngle + step * donutState.clockwise);
+                    donutState.startAngle = reduceAngle(donutState.startAngle + step * donutState.clockwise);
+                    donutState.endAngle = reduceAngle(donutState.endAngle + step * donutState.clockwise);
+                    this.ctx.save();
+                    this.ctx.translate(
+                        (2 * x + 1) * this.donutOuterRadius,
+                        (2 * y + 1) * this.donutOuterRadius
+                        );
+                    this.ctx.rotate(donutState.rotationAngle);
+                    this.ctx.drawImage(
+                        this.donuts[x][y].donut.getImage(),
+                        -this.donutOuterRadius,
+                        -this.donutOuterRadius
+                    );
+                    this.ctx.restore();
                 });
             });
 
-            if (this.ctx) {
-                this.ctx.restore();
-            }
-
-            pendingAnimationFrame = window.requestAnimationFrame(renderLoop);
+            window.requestAnimationFrame(renderLoop);
         };
 
-        pendingAnimationFrame = window.requestAnimationFrame(renderLoop);
+        window.requestAnimationFrame(renderLoop);
     }
 
     private onClick = (e: MouseEvent) => {
@@ -135,36 +141,34 @@ export class DonutContainer {
         };
 
         const donutCoords = this.getDonutCoords(clickCoords);
-        const donut = this.donuts[donutCoords.x][donutCoords.y];
-        this.lastDonutHit = undefined;
+        const donutState = this.donuts[donutCoords.x][donutCoords.y];
 
-        if (this.isDonutHit(donut, clickCoords)) {
-            donut.toggleClockwise();
-            donut.setColor(getRandomColor());
-            this.lastDonutHit = { donut, clickCoords, donutCoords };
+        if (this.isDonutHit(donutState, clickCoords)) {
+            donutState.clockwise = -1 * donutState.clockwise as ClockWise;
+            donutState.donut.setColor(getRandomColor());
         }
+
     }
 
     private getDonutCoords(coords: Coords): Coords {
         return {
-            x: Math.floor(coords.x / 2 / this.props.donutOuterRadius),
-            y: Math.floor(coords.y / 2 / this.props.donutOuterRadius),
+            x: Math.floor(coords.x / 2 / this.donutOuterRadius),
+            y: Math.floor(coords.y / 2 / this.donutOuterRadius),
         };
     }
 
-    private isDonutHit(donut: Donut, clickCoords: Coords): boolean {
-        const props: DonutProps & { canvas: HTMLCanvasElement } = donut.getProps();
-        const clickDistance = getDistance(props.center, clickCoords);
-        const startIsBigger = props.startAngle > props.endAngle;
-        let clickAngle = atan2Arc(getAngle(props.center, clickCoords));
+    private isDonutHit(donutState: DonutState, clickCoords: Coords): boolean {
+        const clickDistance = getDistance(donutState.center, clickCoords);
+        const startIsBigger = donutState.startAngle > donutState.endAngle;
+        let clickAngle = atan2Arc(getAngle(donutState.center, clickCoords));
 
-        clickAngle = startIsBigger && clickAngle < props.endAngle
+        clickAngle = startIsBigger && clickAngle < donutState.endAngle
             ? 2 * Math.PI + clickAngle
             : clickAngle;
 
-        return this.props.donutInnerRadius <= clickDistance
-            && this.props.donutOuterRadius >= clickDistance
-            && clickAngle >= props.startAngle
-            && clickAngle <= (startIsBigger ? 2 * Math.PI + props.endAngle : props.endAngle);
+        return this.donutInnerRadius <= clickDistance
+            && this.donutOuterRadius >= clickDistance
+            && clickAngle >= donutState.startAngle
+            && clickAngle <= (startIsBigger ? 2 * Math.PI + donutState.endAngle : donutState.endAngle);
     }
 }

@@ -1,4 +1,4 @@
-import { Coords } from "./types";
+import { ClockWise, Coords } from "./types";
 
 export function getRandomColor() {
     const digits = "0123456789ABCDEF";
@@ -23,11 +23,19 @@ export function getDistance(p1: Coords, p2: Coords): number {
     return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 }
 
-export function reduceAngle(angle: number, decimals = 1): number {
+export function reduceAngle(angle: number): number {
     const doublePI = 2 * Math.PI;
-    return Math.round(10 ** decimals * (angle > doublePI
+    return angle > doublePI
             ? angle - doublePI
             : angle < 0
                 ? angle + doublePI
-                : angle)) / 10 ** decimals;
+                : angle;
+}
+
+export function getRandomArbitrary(min: number, max: number): number {
+    return Math.random() * (max - min) + min;
+}
+
+export function getRandomDirection(): ClockWise {
+    return getRandomArbitrary(-1, 1) >= 0 ? 1 : -1;
 }
