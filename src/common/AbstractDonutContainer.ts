@@ -25,14 +25,14 @@ export interface DonutState {
     center: Coords;
 }
 
-export abstract class DonutContainer {
+export abstract class AbstractDonutContainer {
     protected donuts: DonutState[][] = [];
     protected donutCountX: number;
     protected donutCountY: number;
     protected donutOuterRadius: number;
     protected donutInnerRadius: number;
     protected canvas: HTMLCanvasElement;
-    protected ctx: CanvasRenderingContext2D | WebGLRenderingContext | null;
+    protected abstract ctx: CanvasRenderingContext2D | WebGLRenderingContext;
     protected canvasRect: ClientRect;
 
     constructor(canvas: HTMLCanvasElement, props: Partial<DonutContainerProps>) {

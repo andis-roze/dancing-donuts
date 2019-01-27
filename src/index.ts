@@ -48,7 +48,7 @@ function startWebGL() {
 
     prepareCanvas(768, 768);
     donutContainer = new DonutContainer3D(canvas, {});
-    // donutContainer.run();
+    donutContainer.run(Math.PI);
 }
 
 function toggleButtonClick(e: MouseEvent) {

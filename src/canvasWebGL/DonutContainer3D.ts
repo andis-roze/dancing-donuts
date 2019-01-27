@@ -1,19 +1,29 @@
 import {
     DonutContainerProps,
-    DonutContainer
-} from "../common/DonutContainer";
+    AbstractDonutContainer
+} from "../common/AbstractDonutContainer";
+import { BasicShader } from "./shaders";
 
-export class DonutContainer3D extends DonutContainer {
+export class DonutContainer3D extends AbstractDonutContainer {
+    protected ctx: WebGLRenderingContext;
+    private shader: BasicShader;
+
     constructor(canvas: HTMLCanvasElement, props: Partial<DonutContainerProps>) {
         super(canvas, props);
-        this.ctx = canvas.getContext("webgl");
+        const ctx = canvas.getContext("webgl");
 
-        if (!this.ctx) {
+        if (!ctx) {
             throw new Error("Canvas 3d rendering context failed to initialise!");
         }
 
-        // this.ctx.clearColor(0.0, 0.0, 0.0, 0);
-        // this.ctx.clear(this.ctx.COLOR_BUFFER_BIT);
+        this.ctx = ctx;
+        this.ctx.viewport(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.clearColor(0, 0, 0, 0);
+        this.ctx.clear(this.ctx.COLOR_BUFFER_BIT);
+
+        this.shader = new BasicShader(this.ctx);
+        this.shader.use();
+
         this.initDonutState();
     }
 
@@ -22,8 +32,6 @@ export class DonutContainer3D extends DonutContainer {
     }
 
     protected drawDonut(x: number, y: number): void {
-        if (!this.ctx) {
-            throw new Error("Canvas 3d rendering context failed to initialise!");
-        }
+        //
     }
 }
