@@ -1,4 +1,4 @@
-import  { reduceAngle } from "./utils";
+import  { reduceAngle } from "../utils";
 
 export interface DonutProps {
     color: string;

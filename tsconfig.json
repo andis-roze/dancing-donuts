@@ -21,5 +21,10 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "filesGlob": [
+    "**/*.ts",
+    "**/*.tsx",
+    "!node_modules/**"
   ]
 }

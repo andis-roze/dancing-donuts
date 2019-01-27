@@ -47,6 +47,8 @@ module.exports = {
             "ban-keywords",
             "allow-pascal-case",
         ],
+        "no-submodule-imports": false,
+        "no-implicit-dependencies": false,
         "no-constant-condition": true,
         "no-control-regex": true,
         "no-duplicate-case": true,
