@@ -1,5 +1,6 @@
 import { DonutContainer2D } from "./canvas2d/DonutContainer2D";
 import { DonutContainer3D } from "./canvasWebGL/DonutContainer3D";
+import { Quad } from "./canvasWebGL/Quad";
 
 enum Type {
     CONTEXT_2D = "Switch to WebGL",
@@ -47,8 +48,10 @@ function startWebGL() {
     }
 
     prepareCanvas(768, 768);
-    donutContainer = new DonutContainer3D(canvas, {});
-    donutContainer.run(Math.PI);
+    const quad = new Quad(canvas);
+    quad.run();
+    // donutContainer = new DonutContainer3D(canvas, {});
+    // donutContainer.run(Math.PI);
 }
 
 function toggleButtonClick(e: MouseEvent) {

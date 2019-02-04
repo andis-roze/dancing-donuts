@@ -32,9 +32,10 @@
     ]
   },
   "dependencies": {
-    "gl-mat4": "^1.2.0"
+    "gl-matrix": "^3.0.0"
   },
   "devDependencies": {
+    "@types/gl-matrix": "^2.4.5",
     "@types/jest": "^23.3.9",
     "autoprefixer": "^9.3.1",
     "html-webpack-plugin": "^3.2.0",

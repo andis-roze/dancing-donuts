@@ -1,9 +1,15 @@
-import { reduceAngle } from "../utils";
+import {
+    reduceAngle,
+    getRandomDirection,
+    getRandomArbitrary,
+    getRandomColor,
+} from "../utils";
 import {
     DonutContainerProps,
     DonutState,
-    AbstractDonutContainer
+    AbstractDonutContainer,
 } from "../common/AbstractDonutContainer";
+import { Donut } from "../common/Donut";
 
 export class DonutContainer2D extends AbstractDonutContainer {
     protected ctx: CanvasRenderingContext2D;
@@ -54,6 +60,35 @@ export class DonutContainer2D extends AbstractDonutContainer {
         };
 
         window.requestAnimationFrame(renderLoop);
+    }
+
+    protected initDonutState() {
+        const startAngle = Math.PI * getRandomArbitrary(0, 1.5);
+        const endAngle = Math.PI * getRandomArbitrary(1.5, 2);
+
+        for (let x = 0; x < this.donutCountX; x++) {
+            this.donuts[x] = [];
+            for (let y = 0; y < this.donutCountY; y++) {
+                this.donuts[x][y] = {
+                    clockwise: getRandomDirection(),
+                    rotationAngle: 0,
+                    startAngle,
+                    endAngle,
+                    center: {
+                        x: (2 * x + 1) * this.donutOuterRadius,
+                        y: (2 * y + 1) * this.donutOuterRadius,
+                    },
+                    donut: new Donut({
+                        startAngle,
+                        endAngle,
+                        color: getRandomColor(),
+                        innerRadius: this.donutInnerRadius,
+                        outerRadius: this.donutOuterRadius,
+                    })
+                };
+                this.drawDonut(x, y);
+            }
+        }
     }
 
     protected drawDonut(x: number, y: number): void {

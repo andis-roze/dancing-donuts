@@ -31,7 +31,11 @@ export class DonutContainer3D extends AbstractDonutContainer {
         // TODO: implement WebGL flavor
     }
 
+    protected initDonutState(): void {
+        // TODO:
+    }
+
     protected drawDonut(x: number, y: number): void {
-        //
+        // TODO:
     }
 }

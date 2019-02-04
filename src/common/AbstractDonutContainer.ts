@@ -1,11 +1,9 @@
 import { ClockWise, Coords } from "./types";
 import {
     getRandomColor,
-    getRandomDirection,
     getDistance,
     atan2Arc,
     getAngle,
-    getRandomArbitrary,
 } from "../utils";
 import { Donut } from "./Donut";
 
@@ -16,6 +14,7 @@ export interface DonutContainerProps {
     donutInnerRadius: number;
 }
 
+// TODO: This interface is WET (as in: "not DRY")
 export interface DonutState {
     donut: Donut;
     clockwise: ClockWise;
@@ -53,34 +52,8 @@ export abstract class AbstractDonutContainer {
 
     public abstract run(radiansPerSecond: number): void;
 
-    protected initDonutState() {
-        const startAngle = Math.PI * getRandomArbitrary(0, 1.5);
-        const endAngle = Math.PI * getRandomArbitrary(1.5, 2);
-
-        for (let x = 0; x < this.donutCountX; x++) {
-            this.donuts[x] = [];
-            for (let y = 0; y < this.donutCountY; y++) {
-                this.donuts[x][y] = {
-                    clockwise: getRandomDirection(),
-                    rotationAngle: 0,
-                    startAngle,
-                    endAngle,
-                    center: {
-                        x: (2 * x + 1) * this.donutOuterRadius,
-                        y: (2 * y + 1) * this.donutOuterRadius,
-                    },
-                    donut: new Donut({
-                        startAngle,
-                        endAngle,
-                        color: getRandomColor(),
-                        innerRadius: this.donutInnerRadius,
-                        outerRadius: this.donutOuterRadius,
-                    })
-                };
-                this.drawDonut(x, y);
-            }
-        }
-    }
+    // TODO: Try to implement DRY solution for this abstract method
+    protected abstract initDonutState(): void;
 
     protected abstract drawDonut(x: number, y: number): void;
 
