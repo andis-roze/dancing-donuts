@@ -1,5 +1,5 @@
 import { mat4 } from "gl-matrix";
-import { isPowerOf2 } from "../utils";
+import { isPowerOf2, getRandomArbitrary } from "../utils";
 import { BasicShader } from "./shaders";
 import { Donut } from "../common/Donut";
 
@@ -14,8 +14,8 @@ export class Quad {
     private squareRotation = 0.0;
 
     public constructor(canvas: HTMLCanvasElement) {
-        const startAngle = Math.PI * 2;
-        const endAngle = Math.PI;
+        const startAngle = Math.PI * getRandomArbitrary(0, 1.5);
+        const endAngle = Math.PI * getRandomArbitrary(1.5, 2);
 
         this.canvas = canvas;
         this.canvas.setAttribute("width", "1000");
@@ -72,10 +72,10 @@ export class Quad {
 
         this.positionBuffer = positionBuffer;
         const positions = [
-          -1.0,  1.0,
-           1.0,  1.0,
-          -1.0, -1.0,
-           1.0, -1.0,
+            -1.0, -1.0,
+             1.0, -1.0,
+             1.0,  1.0,
+            -1.0,  1.0
         ];
 
         this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.positionBuffer);
