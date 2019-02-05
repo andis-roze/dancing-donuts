@@ -1,5 +1,5 @@
 import { mat4 } from "gl-matrix";
-import { isPowerOf2, getRandomArbitrary } from "../utils";
+import { isPowerOf2 } from "../utils";
 import { BasicShader } from "./shaders";
 import { Donut } from "../common/Donut";
 
@@ -10,11 +10,12 @@ export class Quad {
     private ctx: WebGLRenderingContext;
     private shader: BasicShader;
     private positionBuffer: WebGLBuffer;
+    private textureCoordBuffer: WebGLBuffer;
     private squareRotation = 0.0;
 
     public constructor(canvas: HTMLCanvasElement) {
-        const startAngle = Math.PI * getRandomArbitrary(0, 1.5);
-        const endAngle = Math.PI * getRandomArbitrary(1.5, 2);
+        const startAngle = Math.PI * 2;
+        const endAngle = Math.PI;
 
         this.canvas = canvas;
         this.canvas.setAttribute("width", "1000");
@@ -41,6 +42,10 @@ export class Quad {
         this.loadTexture();
     }
 
+    public destructor() {
+        //
+    }
+
     public run(): void {
         let then = 0;
 
@@ -58,7 +63,14 @@ export class Quad {
     }
 
     private initBuffers() {
+        /* -------------- Quad -------------- */
         const positionBuffer = this.ctx.createBuffer();
+
+        if (!positionBuffer) {
+            throw new Error("Position buffer failed to initialise!");
+        }
+
+        this.positionBuffer = positionBuffer;
         const positions = [
           -1.0,  1.0,
            1.0,  1.0,
@@ -66,22 +78,38 @@ export class Quad {
            1.0, -1.0,
         ];
 
-        this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, positionBuffer);
+        this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.positionBuffer);
         this.ctx.bufferData(this.ctx.ARRAY_BUFFER,
                       new Float32Array(positions),
                       this.ctx.STATIC_DRAW);
 
-        if (!positionBuffer) {
+        /* -------------- Texture -------------- */
+        const textureCoordBuffer = this.ctx.createBuffer();
+
+        if (!textureCoordBuffer) {
             throw new Error("Position buffer failed to initialise!");
         }
 
-        this.positionBuffer = positionBuffer;
+        this.textureCoordBuffer = textureCoordBuffer;
+        this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.textureCoordBuffer);
+
+        const textureCoordinates = [
+            0.0,  0.0,
+            1.0,  0.0,
+            1.0,  1.0,
+            0.0,  1.0,
+        ];
+
+        this.ctx.bufferData(
+            this.ctx.ARRAY_BUFFER,
+            new Float32Array(textureCoordinates),
+            this.ctx.STATIC_DRAW
+        );
     }
 
     private loadTexture() {
         const texture = this.ctx.createTexture();
-        this.ctx.bindTexture(this.ctx.TEXTURE_2D, texture);
-
+        const image = this.donut.getImage();
         this.ctx.bindTexture(this.ctx.TEXTURE_2D, texture);
         this.ctx.texImage2D(
             this.ctx.TEXTURE_2D,
@@ -89,18 +117,12 @@ export class Quad {
             this.ctx.RGBA,
             this.ctx.RGBA,
             this.ctx.UNSIGNED_BYTE,
-            this.donut.getImage()
+            image
         );
 
-        // WebGL1 has different requirements for power of 2 images
-        // vs non power of 2 images so check if the image is a
-        // power of 2 in both dimensions.
-        if (isPowerOf2(this.donut.getImage().width) && isPowerOf2(this.donut.getImage().height)) {
-            // Yes, it's a power of 2. Generate mips.
+        if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
             this.ctx.generateMipmap(this.ctx.TEXTURE_2D);
         } else {
-            // No, it's not a power of 2. Turn off mips and set
-            // wrapping to clamp to edge
             this.ctx.texParameteri(this.ctx.TEXTURE_2D, this.ctx.TEXTURE_WRAP_S, this.ctx.CLAMP_TO_EDGE);
             this.ctx.texParameteri(this.ctx.TEXTURE_2D, this.ctx.TEXTURE_WRAP_T, this.ctx.CLAMP_TO_EDGE);
             this.ctx.texParameteri(this.ctx.TEXTURE_2D, this.ctx.TEXTURE_MIN_FILTER, this.ctx.LINEAR);
@@ -142,22 +164,43 @@ export class Quad {
             [0, 0, 1]
         );
 
-        const numComponents = 2;
-        const type = this.ctx.FLOAT;
-        const normalize = false;
-        const stride = 0;
+        {
+            const numComponents = 2;
+            const type = this.ctx.FLOAT;
+            const normalize = false;
+            const stride = 0;
 
-        let offset = 0;
-        this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.positionBuffer);
-        this.ctx.vertexAttribPointer(
-            this.shader.getAttributeLocation("aVertexPosition"),
-            numComponents,
-            type,
-            normalize,
-            stride,
-            offset);
-        this.ctx.enableVertexAttribArray(
-            this.shader.getAttributeLocation("aVertexPosition"));
+            const offset = 0;
+            this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.positionBuffer);
+            this.ctx.vertexAttribPointer(
+                this.shader.getAttributeLocation("aVertexPosition"),
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset
+            );
+            this.ctx.enableVertexAttribArray(
+                this.shader.getAttributeLocation("aVertexPosition"));
+        }
+
+        {
+            const numComponents = 2;
+            const type = this.ctx.FLOAT;
+            const normalize = false;
+            const stride = 0;
+            const offset = 0;
+            this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.textureCoordBuffer);
+            this.ctx.vertexAttribPointer(
+                this.shader.getAttributeLocation("aTextureCoord"),
+                numComponents,
+                type,
+                normalize,
+                stride,
+                offset
+            );
+            this.ctx.enableVertexAttribArray(this.shader.getAttributeLocation("aTextureCoord"));
+          }
 
         this.shader.use();
 
@@ -170,10 +213,17 @@ export class Quad {
         this.ctx.uniformMatrix4fv(
             this.shader.getUniformLocation("uModelViewMatrix"),
             false,
-            modelViewMatrix);
+            modelViewMatrix
+        );
 
-        offset = 0;
-        const vertexCount = 4;
-        this.ctx.drawArrays(this.ctx.TRIANGLE_STRIP, offset, vertexCount);
+        this.ctx.activeTexture(this.ctx.TEXTURE0);
+
+        this.ctx.uniform1i(this.shader.getUniformLocation("uSampler"), 0);
+
+        {
+            const offset = 0;
+            const vertexCount = 4;
+            this.ctx.drawArrays(this.ctx.TRIANGLE_STRIP, offset, vertexCount);
+        }
     }
 }

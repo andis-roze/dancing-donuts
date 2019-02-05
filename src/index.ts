@@ -8,7 +8,7 @@ enum Type {
 }
 
 let canvas: HTMLCanvasElement;
-let donutContainer: DonutContainer2D | DonutContainer3D | null;
+let donutContainer: DonutContainer2D | DonutContainer3D | Quad | null;
 let canvasContainer: HTMLElement | null;
 
 function prepareCanvas(width?: number, height?: number) {
@@ -17,7 +17,7 @@ function prepareCanvas(width?: number, height?: number) {
     }
 
     if (canvas && donutContainer) {
-        // donutContainer.destructor();
+        donutContainer.destructor();
         canvasContainer.removeChild(canvas);
         donutContainer = null;
     }
@@ -48,8 +48,8 @@ function startWebGL() {
     }
 
     prepareCanvas(768, 768);
-    const quad = new Quad(canvas);
-    quad.run();
+    donutContainer = new Quad(canvas);
+    donutContainer.run();
     // donutContainer = new DonutContainer3D(canvas, {});
     // donutContainer.run(Math.PI);
 }
