@@ -72,10 +72,10 @@ export class Quad {
 
         this.positionBuffer = positionBuffer;
         const positions = [
+            -1.0,  1.0,
             -1.0, -1.0,
-             1.0, -1.0,
              1.0,  1.0,
-            -1.0,  1.0
+             1.0, -1.0
         ];
 
         this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.positionBuffer);
@@ -94,10 +94,10 @@ export class Quad {
         this.ctx.bindBuffer(this.ctx.ARRAY_BUFFER, this.textureCoordBuffer);
 
         const textureCoordinates = [
-            0.0,  0.0,
-            1.0,  0.0,
-            1.0,  1.0,
             0.0,  1.0,
+            0.0,  0.0,
+            1.0,  1.0,
+            1.0,  0.0,
         ];
 
         this.ctx.bufferData(
