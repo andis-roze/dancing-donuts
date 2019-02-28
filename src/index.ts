@@ -1,6 +1,5 @@
 import { DonutContainer2D } from "./canvas2d/DonutContainer2D";
 import { DonutContainer3D } from "./canvasWebGL/DonutContainer3D";
-import { Quad } from "./canvasWebGL/Quad";
 
 enum Type {
     CONTEXT_2D = "Switch to WebGL",
@@ -8,10 +7,10 @@ enum Type {
 }
 
 let canvas: HTMLCanvasElement;
-let donutContainer: DonutContainer2D | DonutContainer3D | Quad | null;
+let donutContainer: DonutContainer2D | DonutContainer3D | null;
 let canvasContainer: HTMLElement | null;
 
-function prepareCanvas(width?: number, height?: number) {
+function prepareCanvas() {
     if (!canvasContainer) {
         throw new Error("Missing canvas parent containet!");
     }
@@ -23,11 +22,6 @@ function prepareCanvas(width?: number, height?: number) {
     }
 
     canvas = document.createElement("canvas");
-
-    if (width && height) {
-        canvas.width = width;
-        canvas.height = height;
-    }
 
     canvasContainer.appendChild(canvas);
 }
@@ -47,11 +41,9 @@ function startWebGL() {
         return;
     }
 
-    prepareCanvas(768, 768);
-    donutContainer = new Quad(canvas);
-    donutContainer.run();
-    // donutContainer = new DonutContainer3D(canvas, {});
-    // donutContainer.run(Math.PI);
+    prepareCanvas();
+    donutContainer = new DonutContainer3D(canvas, {});
+    donutContainer.run(Math.PI);
 }
 
 function toggleButtonClick(e: MouseEvent) {

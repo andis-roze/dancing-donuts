@@ -1,3 +1,4 @@
+// import {  } from "gl-matrix";
 import {
     reduceAngle,
     getRandomDirection,
@@ -26,10 +27,14 @@ export class DonutContainer2D extends AbstractDonutContainer {
         this.initDonutState();
     }
 
+    public destructor() {
+        this.canvas.removeEventListener("click", this.onClick);
+    }
+
     public run(radiansPerSecond: number) {
         let lastRender = performance.now();
-        const renderLoop = (time: number) => {
 
+        const renderLoop = (time: number) => {
             const delta = (time - lastRender) / 1000;
             const step = radiansPerSecond * delta;
             lastRender = time;
@@ -62,13 +67,13 @@ export class DonutContainer2D extends AbstractDonutContainer {
         window.requestAnimationFrame(renderLoop);
     }
 
-    protected initDonutState() {
-        const startAngle = Math.PI * getRandomArbitrary(0, 1.5);
-        const endAngle = Math.PI * getRandomArbitrary(1.5, 2);
-
+    private initDonutState() {
         for (let x = 0; x < this.donutCountX; x++) {
             this.donuts[x] = [];
             for (let y = 0; y < this.donutCountY; y++) {
+                const endAngle = Math.PI * getRandomArbitrary(0, 2 * Math.PI);
+                const startAngle = reduceAngle(endAngle + getRandomArbitrary(0, 1.5 * Math.PI));
+
                 this.donuts[x][y] = {
                     clockwise: getRandomDirection(),
                     rotationAngle: 0,
@@ -91,7 +96,7 @@ export class DonutContainer2D extends AbstractDonutContainer {
         }
     }
 
-    protected drawDonut(x: number, y: number): void {
+    private drawDonut(x: number, y: number): void {
         this.ctx.drawImage(
             this.donuts[x][y].donut.getImage(),
             2 * x * this.donutOuterRadius,

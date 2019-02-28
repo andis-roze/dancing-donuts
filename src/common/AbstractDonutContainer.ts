@@ -50,18 +50,14 @@ export abstract class AbstractDonutContainer {
         this.canvas.addEventListener("click", this.onClick);
     }
 
-    public destructor() {
-        this.canvas.removeEventListener("click", this.onClick);
-    }
-
     public abstract run(radiansPerSecond: number): void;
 
     // TODO: Try to implement DRY solution for this abstract method
-    protected abstract initDonutState(): void;
+    // protected abstract initDonutState(): void;
 
-    protected abstract drawDonut(x: number, y: number): void;
+    // protected abstract drawDonut(x: number, y: number): void;
 
-    private onClick = (e: MouseEvent) => {
+    protected onClick = (e: MouseEvent) => {
         if (!this.canvasRect) {
             this.canvasRect = this.canvas.getBoundingClientRect();
         }

@@ -1,14 +1,9 @@
 module.exports = {
-    "extends": ["tslint:latest", "tslint-eslint-rules"],
-    "rules": {
+    extends: ["tslint:latest", "tslint-eslint-rules"],
+    rules: {
         "arrow-parens": false,
         "array-type": false,
-        "ban": [
-            true,
-            ["_", "forEach"],
-            ["_", "each"],
-            ["Array", "apply"],
-        ],
+        ban: [true, ["_", "forEach"], ["_", "each"], ["Array", "apply"]],
         "interface-name": [true, "never-prefix"],
         "interface-over-type-literal": false,
         "import-spacing": false,
@@ -18,10 +13,7 @@ module.exports = {
         "no-angle-bracket-type-assertion": true,
         "no-default-export": { severity: "warning" },
         "no-inferrable-types": true,
-        "no-invalid-this": [
-            true,
-            "check-function-in-method",
-        ],
+        "no-invalid-this": [true, "check-function-in-method"],
         "no-null-keyword": false,
         "no-object-literal-type-assertion": false,
         "no-require-imports": false,
@@ -35,17 +27,13 @@ module.exports = {
         "prefer-for-of": true,
         "prefer-conditional-expression": false,
         "space-in-parens": [true, "never"],
-        "triple-equals": [
-            true,
-            "allow-null-check",
-            "allow-undefined-check",
-        ],
+        "triple-equals": [true, "allow-null-check", "allow-undefined-check"],
         "variable-name": [
             true,
             "check-format",
             "allow-leading-underscore",
             "ban-keywords",
-            "allow-pascal-case",
+            "allow-pascal-case"
         ],
         "no-submodule-imports": false,
         "no-implicit-dependencies": false,
@@ -57,10 +45,7 @@ module.exports = {
         "no-ex-assign": true,
         "no-extra-boolean-cast": true,
         "no-extra-semi": false,
-        "no-inner-declarations": [
-            true,
-            "both",
-        ],
+        "no-inner-declarations": [true, "both"],
         "no-invalid-regexp": true,
         "no-irregular-whitespace": true,
         "no-regex-spaces": true,
@@ -68,28 +53,19 @@ module.exports = {
         "no-unexpected-multiline": true,
         "space-before-function-paren": false,
         "valid-typeof": true,
-        "array-bracket-spacing": [
-            true,
-            "never",
-        ],
-        "block-spacing": [
-            true,
-            "always",
-        ],
+        "array-bracket-spacing": [true, "never"],
+        "block-spacing": [true, "always"],
         "brace-style": [
             true,
             "1tbs",
             {
-                "allowSingleLine": true,
-            },
+                allowSingleLine: true
+            }
         ],
-        "object-curly-spacing": [
-            true,
-            "always",
-        ],
+        "object-curly-spacing": [true, "always"],
         semicolon: [true, "always", "ignore-bound-class-methods"],
         "max-line-length": false,
         "trailing-comma": false,
-        "object-literal-shorthand": false,
-    },
+        "object-literal-shorthand": false
+    }
 };
