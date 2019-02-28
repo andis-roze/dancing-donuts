@@ -11,20 +11,11 @@
     "allowSyntheticDefaultImports": false,
     "suppressImplicitAnyIndexErrors": false,
     "allowJs": false,
-    "lib": [ "es6", "dom" ],
+    "lib": ["es6", "dom"],
     "target": "es5",
     "newLine": "LF",
-    "baseUrl": "./",
+    "baseUrl": "./"
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
-  "filesGlob": [
-    "**/*.ts",
-    "**/*.tsx",
-    "!node_modules/**"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

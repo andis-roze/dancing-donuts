@@ -7,5 +7,3 @@ declare module "!raw-loader!*" {
     var t: string;
     export = t;
 }
-
-declare module "gl-mat4";

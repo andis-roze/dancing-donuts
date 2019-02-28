@@ -26,6 +26,10 @@ export class DonutContainer2D extends AbstractDonutContainer {
         this.initDonutState();
     }
 
+    public destructor() {
+        this.canvas.removeEventListener("click", this.onClick);
+    }
+
     public run(radiansPerSecond: number) {
         let lastRender = performance.now();
         const renderLoop = (time: number) => {
