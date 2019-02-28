@@ -8,23 +8,15 @@
     "noUnusedLocals": true,
     "pretty": true,
     "strictNullChecks": true,
-    "allowSyntheticDefaultImports": false,
+    "allowSyntheticDefaultImports": true,
     "suppressImplicitAnyIndexErrors": false,
     "allowJs": false,
-    "lib": [ "es6", "dom" ],
+    "lib": ["es6", "dom"],
     "target": "es5",
     "newLine": "LF",
     "baseUrl": "./",
+    "strict": false
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
-  "filesGlob": [
-    "**/*.ts",
-    "**/*.tsx",
-    "!node_modules/**"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

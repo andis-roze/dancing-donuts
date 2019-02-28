@@ -12,6 +12,7 @@ export class Donut {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private color: string;
+    // private rotationAngle: number;
     private startAngle: number;
     private endAngle: number;
     private innerRadius: number;
@@ -28,8 +29,9 @@ export class Donut {
         }
 
         this.ctx = ctx;
-        this.canvas.setAttribute("width", `${width}`);
-        this.canvas.setAttribute("height", `${width}`);
+
+        this.canvas.width = width;
+        this.canvas.height = width;
 
         this.color = props.color;
         this.startAngle = reduceAngle(props.startAngle);

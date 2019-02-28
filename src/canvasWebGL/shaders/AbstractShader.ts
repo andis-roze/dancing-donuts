@@ -2,7 +2,7 @@ export abstract class AbstractShader {
     private name: string;
     private ctx: WebGLRenderingContext;
     private program: WebGLProgram;
-    private attributes: { [name: string]: number } = {};
+    private attributes: { [name: string]: GLint } = {};
     private uniforms: { [name: string]: WebGLUniformLocation } = {};
 
     constructor(name: string, ctx: WebGLRenderingContext) {
@@ -26,7 +26,7 @@ export abstract class AbstractShader {
         return this.attributes[name];
     }
 
-    public getUniformLocation(name: string): WebGLUniformLocation | null {
+    public getUniformLocation(name: string): WebGLUniformLocation {
         if (this.uniforms[name] === undefined) {
             throw new Error(`Unable to find uniform named "${name}" in shader named ${this.name}`);
         }

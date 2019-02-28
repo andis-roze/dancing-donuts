@@ -43,25 +43,34 @@ export abstract class AbstractDonutContainer {
         const donutDiameter = 2 * this.donutOuterRadius;
         const canvasWidth = `${this.donutCountX * donutDiameter}`;
         const canvasHeight = `${this.donutCountY * donutDiameter}`;
+        this.canvasRect = canvas.getBoundingClientRect();
 
         this.canvas = canvas;
         this.canvas.setAttribute("width", canvasWidth);
         this.canvas.setAttribute("height", canvasHeight);
         this.canvas.addEventListener("click", this.onClick);
+        // this.canvas.addEventListener("touchend", this.onClick);
     }
 
     public destructor() {
         this.canvas.removeEventListener("click", this.onClick);
+        delete this.canvasRect;
+        delete this.canvas;
+        delete this.donutCountX;
+        delete this.donutCountY;
+        delete this.donutInnerRadius;
+        delete this.donutOuterRadius;
+        delete this.donuts;
     }
 
     public abstract run(radiansPerSecond: number): void;
 
     // TODO: Try to implement DRY solution for this abstract method
-    protected abstract initDonutState(): void;
+    // protected abstract initDonutState(): void;
 
-    protected abstract drawDonut(x: number, y: number): void;
+    // protected abstract drawDonut(x: number, y: number): void;
 
-    private onClick = (e: MouseEvent) => {
+    protected onClick = (e: MouseEvent) => {
         if (!this.canvasRect) {
             this.canvasRect = this.canvas.getBoundingClientRect();
         }
