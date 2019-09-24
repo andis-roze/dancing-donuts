@@ -1,5 +1,5 @@
-import { DonutContainer2D } from "./canvas2d/DonutContainer2D";
-import { DonutContainer3D } from "./canvasWebGL/DonutContainer3D";
+import { DonutContainer2D } from "./DonutContainer2D";
+import { DonutContainer3D } from "./DonutContainer3D";
 
 enum Type {
     CONTEXT_2D = "Switch to WebGL",
@@ -9,6 +9,7 @@ enum Type {
 let canvas: HTMLCanvasElement;
 let donutContainer: DonutContainer2D | DonutContainer3D | null;
 let canvasContainer: HTMLElement | null;
+let animationFrameId: ReturnType<typeof requestAnimationFrame> = 0;
 
 function prepareCanvas() {
     if (!canvasContainer) {
@@ -32,26 +33,48 @@ function start2D () {
     }
 
     prepareCanvas();
-    donutContainer = new DonutContainer2D(canvas, {});
-    donutContainer.run(Math.PI);
+    donutContainer = new DonutContainer2D({ canvas });
+    run(Math.PI);
 }
 
-function startWebGL() {
+function start3D() {
     if (!canvasContainer) {
         return;
     }
 
     prepareCanvas();
-    donutContainer = new DonutContainer3D(canvas, {});
-    donutContainer.run(Math.PI);
+    donutContainer = new DonutContainer3D({ canvas });
+    run(Math.PI);
+}
+
+function run(radiansPerSecond: number) {
+    let lastRender = performance.now();
+
+    const renderLoop = (time: number) => {
+        if (!donutContainer) {
+            throw new Error("Missing donut container!");
+        }
+
+        const delta = (time - lastRender) / 1000;
+        const step = radiansPerSecond * delta;
+        lastRender = time;
+
+        donutContainer.draw(step);
+        animationFrameId = window.requestAnimationFrame(renderLoop);
+    };
+    animationFrameId = window.requestAnimationFrame(renderLoop);
 }
 
 function toggleButtonClick(e: MouseEvent) {
-    if (e.toElement.innerHTML === Type.CONTEXT_2D) {
-        e.toElement.innerHTML = Type.CONTEXT_WEBGL;
-        startWebGL();
+    const toggleButton = document.getElementById("toggleButton");
+
+    cancelAnimationFrame(animationFrameId);
+
+    if (toggleButton!.innerText === Type.CONTEXT_2D) {
+        toggleButton!.innerText = Type.CONTEXT_WEBGL;
+        start3D();
     } else {
-        e.toElement.innerHTML = Type.CONTEXT_2D;
+        toggleButton!.innerText = Type.CONTEXT_2D;
         start2D();
     }
 }
@@ -60,5 +83,5 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleButton = document.getElementById("toggleButton");
     toggleButton!.addEventListener("click", toggleButtonClick);
     canvasContainer = document.getElementById("canvasContainer");
-    startWebGL();
+    start3D();
 });

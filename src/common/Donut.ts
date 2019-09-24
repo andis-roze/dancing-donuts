@@ -1,5 +1,3 @@
-import  { reduceAngle } from "../utils";
-
 export interface DonutProps {
     color: string;
     startAngle: number;
@@ -11,69 +9,49 @@ export interface DonutProps {
 export class Donut {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
-    private color: string;
-    private startAngle: number;
-    private endAngle: number;
-    private innerRadius: number;
-    private outerRadius: number;
 
-    constructor(props: DonutProps, dpr=1) {
-        const width = 2 * props.outerRadius;
-
+    constructor(props: DonutProps) {
         this.canvas = document.createElement("canvas");
         const ctx = this.canvas.getContext("2d");
+        const width = 2 * props.outerRadius;
 
         if (!ctx) {
             throw new Error("Canvas 2d rendering context failed to initialise!");
         }
 
         this.ctx = ctx;
-
-        // https://www.html5rocks.com/en/tutorials/canvas/hidpi/
-        this.canvas.width = width * dpr;
-        this.canvas.height = width * dpr;
-        this.ctx.scale(dpr, dpr);
-
-        this.color = props.color;
-        this.startAngle = reduceAngle(props.startAngle);
-        this.endAngle = reduceAngle(props.endAngle);
-        this.innerRadius = props.innerRadius;
-        this.outerRadius = props.outerRadius;
-
-        this.draw();
+        this.canvas.width = width;
+        this.canvas.height = width;
     }
 
-    public getImage = () => this.canvas;
+    public draw(props: DonutProps) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    public setColor = (color: string) => {
-        this.color = color;
-        this.draw();
-    }
-
-    private draw() {
         this.ctx.strokeStyle = "black";
-        this.ctx.fillStyle = this.color;
+        this.ctx.fillStyle = props.color;
         this.ctx.beginPath();
         // Outer arc: counter clockwise
         this.ctx.arc(
-            this.outerRadius,
-            this.outerRadius,
-            this.outerRadius,
-            this.startAngle,
-            this.endAngle,
+            props.outerRadius,
+            props.outerRadius,
+            props.outerRadius,
+            props.startAngle,
+            props.endAngle,
             false
             );
         // Inner arc: clockwise
         this.ctx.arc(
-            this.outerRadius,
-            this.outerRadius,
-            this.innerRadius,
-            this.endAngle,
-            this.startAngle,
+            props.outerRadius,
+            props.outerRadius,
+            props.innerRadius,
+            props.endAngle,
+            props.startAngle,
             true
             );
         this.ctx.closePath();
         this.ctx.fill();
         this.ctx.stroke();
+
+        return this.canvas;
     }
 }

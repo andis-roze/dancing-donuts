@@ -1,5 +1,25 @@
 import { ClockWise, Coords } from "./common/types";
 
+function mapValueToInterval(
+    val: number,
+    fromStart: number,
+    fromEnd: number,
+    toStart: number,
+    toEnd: number
+): number {
+    return (val - fromStart) * (toEnd - toStart) / (fromEnd - fromStart) + toStart;
+}
+
+export function splitHexColor(color: string): number[] {
+    const intColors = [
+        parseInt(color.substring(1, 3), 16),
+        parseInt(color.substring(3, 5), 16),
+        parseInt(color.substring(5), 16),
+    ];
+
+    return intColors.map(color => mapValueToInterval(color, 0, 255, 0, 1));
+}
+
 export function getRandomColor() {
     const digits = "0123456789ABCDEF";
     let color = "#";

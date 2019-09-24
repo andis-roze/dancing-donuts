@@ -1,40 +1,51 @@
-import { ClockWise, Coords } from "./types";
+import { Coords, ClockWise } from "./types";
 import {
+    getRandomDirection,
+    // getRandomArbitrary,
     getRandomColor,
     getDistance,
     atan2Arc,
     getAngle,
+    reduceAngle,
 } from "../utils";
 import { Donut } from "./Donut";
 
-export interface DonutContainerProps {
-    donutCountX: number;
-    donutCountY: number;
-    donutOuterRadius: number;
-    donutInnerRadius: number;
-}
-
-// TODO: This interface is WET (as in: "not DRY")
 export interface DonutState {
-    donut: Donut;
-    clockwise: ClockWise;
-    rotationAngle: number;
+    color: string;
     startAngle: number;
     endAngle: number;
+    clockwise: ClockWise;
+    rotationAngle: number;
     center: Coords;
 }
 
-export abstract class AbstractDonutContainer {
+export interface DonutContainer {
+    destructor(): void;
+    draw(step: number): void;
+}
+
+export interface DonutContainerProps {
+    canvas: HTMLCanvasElement;
+    donutCountX?: number;
+    donutCountY?: number;
+    donutOuterRadius?: number;
+    donutInnerRadius?: number;
+}
+
+export abstract class AbstractDonutContainer implements DonutContainer {
+    protected abstract ctx: CanvasRenderingContext2D | WebGLRenderingContext;
+    protected donut!: Donut;
     protected donuts: DonutState[][] = [];
+    protected canvas: HTMLCanvasElement;
+    protected canvasRect: ClientRect;
     protected donutCountX: number;
     protected donutCountY: number;
     protected donutOuterRadius: number;
     protected donutInnerRadius: number;
-    protected canvas: HTMLCanvasElement;
-    protected abstract ctx: CanvasRenderingContext2D | WebGLRenderingContext;
-    protected canvasRect: ClientRect;
 
-    constructor(canvas: HTMLCanvasElement, props: Partial<DonutContainerProps>) {
+    public constructor(props: DonutContainerProps) {
+        this.canvas = props.canvas;
+        this.canvasRect = this.canvas.getBoundingClientRect();
         this.donutCountX = props.donutCountX || 20;
         this.donutCountY = props.donutCountY || 20;
         this.donutOuterRadius = props.donutOuterRadius || 25;
@@ -44,20 +55,60 @@ export abstract class AbstractDonutContainer {
         const canvasWidth = `${this.donutCountX * donutDiameter}`;
         const canvasHeight = `${this.donutCountY * donutDiameter}`;
 
-        this.canvas = canvas;
         this.canvas.setAttribute("width", canvasWidth);
         this.canvas.setAttribute("height", canvasHeight);
         this.canvas.addEventListener("click", this.onClick);
+        // this.canvas.addEventListener("touchend", this.onClick);
+
+        this.initDonutState();
     }
 
-    public abstract run(radiansPerSecond: number): void;
+    public destructor() {
+        this.canvas.removeEventListener("click", this.onClick);
+        // this.canvas.removeEventListener("touchend", this.onClick);
+        delete this.canvasRect;
+        delete this.ctx;
+        delete this.canvas;
+        delete this.donuts;
+        delete this.donut;
+        delete this.donutCountX;
+        delete this.donutCountY;
+        delete this.donutInnerRadius;
+        delete this.donutOuterRadius;
+    }
 
-    // TODO: Try to implement DRY solution for this abstract method
-    // protected abstract initDonutState(): void;
+    public abstract draw(step: number): void;
 
-    // protected abstract drawDonut(x: number, y: number): void;
+    private initDonutState() {
+        const startAngle = 0;
+        const endAngle = 4 * Math.PI / 3; // getRandomArbitrary(Math.PI / 3, 1.75 * Math.PI);
+        this.donut = new Donut({
+            color: "#FFFFFF",
+            startAngle,
+            endAngle,
+            innerRadius: this.donutInnerRadius,
+            outerRadius: this.donutOuterRadius,
+        });
 
-    protected onClick = (e: MouseEvent) => {
+        for (let x = 0; x < this.donutCountX; x++) {
+            this.donuts[x] = [];
+            for (let y = 0; y < this.donutCountY; y++) {
+                this.donuts[x][y] = {
+                    color: getRandomColor(),
+                    clockwise: getRandomDirection(),
+                    rotationAngle: 0,
+                    startAngle,
+                    endAngle,
+                    center: {
+                        x: (2 * x + 1) * this.donutOuterRadius,
+                        y: (2 * y + 1) * this.donutOuterRadius,
+                    },
+                };
+            }
+        }
+    }
+
+    private onClick = (e: MouseEvent) => {
         if (!this.canvasRect) {
             this.canvasRect = this.canvas.getBoundingClientRect();
         }
@@ -72,9 +123,8 @@ export abstract class AbstractDonutContainer {
 
         if (this.isDonutHit(donutState, clickCoords)) {
             donutState.clockwise = -1 * donutState.clockwise as ClockWise;
-            donutState.donut.setColor(getRandomColor());
+            donutState.color = getRandomColor();
         }
-
     }
 
     private getDonutCoords(coords: Coords): Coords {
@@ -85,17 +135,23 @@ export abstract class AbstractDonutContainer {
     }
 
     private isDonutHit(donutState: DonutState, clickCoords: Coords): boolean {
-        const clickDistance = getDistance(donutState.center, clickCoords);
-        const startIsBigger = donutState.startAngle > donutState.endAngle;
-        let clickAngle = atan2Arc(getAngle(donutState.center, clickCoords));
+        const { center, rotationAngle } = donutState;
+        let { startAngle, endAngle } = donutState;
 
-        clickAngle = startIsBigger && clickAngle < donutState.endAngle
+        startAngle = reduceAngle(startAngle + rotationAngle);
+        endAngle = reduceAngle(endAngle + rotationAngle);
+
+        const clickDistance = getDistance(center, clickCoords);
+        const startIsBigger = startAngle > endAngle;
+        let clickAngle = atan2Arc(getAngle(center, clickCoords));
+
+        clickAngle = startIsBigger && clickAngle < endAngle
             ? 2 * Math.PI + clickAngle
             : clickAngle;
 
         return this.donutInnerRadius <= clickDistance
             && this.donutOuterRadius >= clickDistance
-            && clickAngle >= donutState.startAngle
-            && clickAngle <= (startIsBigger ? 2 * Math.PI + donutState.endAngle : donutState.endAngle);
+            && clickAngle >= startAngle
+            && clickAngle <= (startIsBigger ? 2 * Math.PI + endAngle : endAngle);
     }
 }

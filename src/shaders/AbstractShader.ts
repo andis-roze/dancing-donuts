@@ -8,6 +8,12 @@ export abstract class AbstractShader {
     constructor(name: string, ctx: WebGLRenderingContext) {
         this.name = name;
         this.ctx = ctx;
+        const program = this.ctx.createProgram();
+
+        if (!program) {
+            throw new Error("Shader program failed to initialise!");
+        }
+        this.program = program;
     }
 
     public getName(): string {
@@ -68,13 +74,6 @@ export abstract class AbstractShader {
     }
 
     private createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): void {
-        const program = this.ctx.createProgram();
-
-        if (!program) {
-            throw new Error("Shader program failed to initialise!");
-        }
-
-        this.program = program;
         this.ctx.attachShader(this.program, vertexShader);
         this.ctx.attachShader(this.program, fragmentShader);
         this.ctx.linkProgram(this.program);
