@@ -17,7 +17,7 @@ export function splitHexColor(color: string): number[] {
         parseInt(color.substring(5), 16),
     ];
 
-    return intColors.map(color => mapValueToInterval(color, 0, 255, 0, 1));
+    return intColors.map(c => mapValueToInterval(c, 0, 255, 0, 1));
 }
 
 export function getRandomColor() {

@@ -1,7 +1,7 @@
 import { AbstractDonutContainer, DonutContainerProps } from "./common/AbstractDonutContainer";
 import {
     m3,
-    isPowerOf2,
+    // isPowerOf2,
     reduceAngle,
     splitHexColor,
  } from "./utils";
@@ -18,7 +18,7 @@ export class DonutContainer3D extends AbstractDonutContainer {
     private samplerUniformLocation!: WebGLUniformLocation;
     private donutBuffer!: WebGLBuffer;
     private initialRotation = 0;
-    private texture: WebGLTexture;
+    // private texture: WebGLTexture;
 
     public constructor(props: DonutContainerProps) {
         super(props);
@@ -35,7 +35,7 @@ export class DonutContainer3D extends AbstractDonutContainer {
         }
 
         this.ctx = ctx;
-        this.texture = texture;
+        // this.texture = texture;
         this.initCanvas(this.canvas);
         this.initShader();
         this.initTexture(0, 0);
@@ -136,40 +136,40 @@ export class DonutContainer3D extends AbstractDonutContainer {
 
     private initTexture(x: number, y: number) {
         // TODO: !!!
-        const image = this.donut.draw({
-            ...this.donuts[x][y],
-            innerRadius: this.donutInnerRadius,
-            outerRadius: this.donutOuterRadius,
-        });
-        this.ctx.bindTexture(this.ctx.TEXTURE_2D, this.texture);
-        this.ctx.texImage2D(
-            this.ctx.TEXTURE_2D,
-            0,
-            this.ctx.RGBA,
-            this.ctx.RGBA,
-            this.ctx.UNSIGNED_BYTE,
-            image
-        );
+        // const image = this.donut.draw({
+        //     ...this.donuts[x][y],
+        //     innerRadius: this.donutInnerRadius,
+        //     outerRadius: this.donutOuterRadius,
+        // });
+        // this.ctx.bindTexture(this.ctx.TEXTURE_2D, this.texture);
+        // this.ctx.texImage2D(
+        //     this.ctx.TEXTURE_2D,
+        //     0,
+        //     this.ctx.RGBA,
+        //     this.ctx.RGBA,
+        //     this.ctx.UNSIGNED_BYTE,
+        //     image
+        // );
 
-        if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-            this.ctx.generateMipmap(this.ctx.TEXTURE_2D);
-        } else {
-            this.ctx.texParameteri(
-                this.ctx.TEXTURE_2D,
-                this.ctx.TEXTURE_WRAP_S,
-                this.ctx.CLAMP_TO_EDGE
-            );
-            this.ctx.texParameteri(
-                this.ctx.TEXTURE_2D,
-                this.ctx.TEXTURE_WRAP_T,
-                this.ctx.CLAMP_TO_EDGE
-            );
-            this.ctx.texParameteri(
-                this.ctx.TEXTURE_2D,
-                this.ctx.TEXTURE_MIN_FILTER,
-                this.ctx.LINEAR
-            );
-        }
+        // if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+        //     this.ctx.generateMipmap(this.ctx.TEXTURE_2D);
+        // } else {
+        //     this.ctx.texParameteri(
+        //         this.ctx.TEXTURE_2D,
+        //         this.ctx.TEXTURE_WRAP_S,
+        //         this.ctx.CLAMP_TO_EDGE
+        //     );
+        //     this.ctx.texParameteri(
+        //         this.ctx.TEXTURE_2D,
+        //         this.ctx.TEXTURE_WRAP_T,
+        //         this.ctx.CLAMP_TO_EDGE
+        //     );
+        //     this.ctx.texParameteri(
+        //         this.ctx.TEXTURE_2D,
+        //         this.ctx.TEXTURE_MIN_FILTER,
+        //         this.ctx.LINEAR
+        //     );
+        // }
     }
 
     private initBuffers() {

@@ -1,7 +1,7 @@
 import { Coords, ClockWise } from "./types";
 import {
     getRandomDirection,
-    // getRandomArbitrary,
+    getRandomArbitrary,
     getRandomColor,
     getDistance,
     atan2Arc,
@@ -34,7 +34,6 @@ export interface DonutContainerProps {
 
 export abstract class AbstractDonutContainer implements DonutContainer {
     protected abstract ctx: CanvasRenderingContext2D | WebGLRenderingContext;
-    protected donut!: Donut;
     protected donuts: DonutState[][] = [];
     protected canvas: HTMLCanvasElement;
     protected canvasRect: ClientRect;
@@ -42,6 +41,8 @@ export abstract class AbstractDonutContainer implements DonutContainer {
     protected donutCountY: number;
     protected donutOuterRadius: number;
     protected donutInnerRadius: number;
+    protected sprites: HTMLCanvasElement;
+    protected spritesCtx: CanvasRenderingContext2D;
 
     public constructor(props: DonutContainerProps) {
         this.canvas = props.canvas;
@@ -60,6 +61,16 @@ export abstract class AbstractDonutContainer implements DonutContainer {
         this.canvas.addEventListener("click", this.onClick);
         // this.canvas.addEventListener("touchend", this.onClick);
 
+        this.sprites = document.createElement("canvas");
+        this.sprites.setAttribute("width", canvasWidth);
+        this.sprites.setAttribute("height", canvasHeight);
+        const spritesCtx = this.sprites.getContext("2d");
+
+        if (!spritesCtx) {
+            throw Error("Sprite canvas 2d rendering context failed to initialise!");
+        }
+
+        this.spritesCtx = spritesCtx;
         this.initDonutState();
     }
 
@@ -70,7 +81,8 @@ export abstract class AbstractDonutContainer implements DonutContainer {
         delete this.ctx;
         delete this.canvas;
         delete this.donuts;
-        delete this.donut;
+        delete this.sprites;
+        delete this.spritesCtx;
         delete this.donutCountX;
         delete this.donutCountY;
         delete this.donutInnerRadius;
@@ -80,23 +92,24 @@ export abstract class AbstractDonutContainer implements DonutContainer {
     public abstract draw(step: number): void;
 
     private initDonutState() {
-        const startAngle = 0;
-        const endAngle = 4 * Math.PI / 3; // getRandomArbitrary(Math.PI / 3, 1.75 * Math.PI);
-        this.donut = new Donut({
-            color: "#FFFFFF",
-            startAngle,
-            endAngle,
-            innerRadius: this.donutInnerRadius,
-            outerRadius: this.donutOuterRadius,
-        });
-
         for (let x = 0; x < this.donutCountX; x++) {
             this.donuts[x] = [];
             for (let y = 0; y < this.donutCountY; y++) {
+                const color = getRandomColor();
+                const rotationAngle = 0;
+                const startAngle = getRandomArbitrary(0, 1.75 * Math.PI);
+                const endAngle = startAngle + getRandomArbitrary(Math.PI / 2, 1.75 * Math.PI);
+                const donut = new Donut({
+                    color,
+                    startAngle,
+                    endAngle,
+                    innerRadius: this.donutInnerRadius,
+                    outerRadius: this.donutOuterRadius,
+                });
                 this.donuts[x][y] = {
-                    color: getRandomColor(),
+                    color,
                     clockwise: getRandomDirection(),
-                    rotationAngle: 0,
+                    rotationAngle,
                     startAngle,
                     endAngle,
                     center: {
@@ -104,6 +117,18 @@ export abstract class AbstractDonutContainer implements DonutContainer {
                         y: (2 * y + 1) * this.donutOuterRadius,
                     },
                 };
+
+                this.spritesCtx.drawImage(
+                    donut.getSprite(),
+                    0,
+                    0,
+                    2 * this.donutOuterRadius,
+                    2 * this.donutOuterRadius,
+                    2 * x * this.donutOuterRadius,
+                    2 * y * this.donutOuterRadius,
+                    2 * this.donutOuterRadius,
+                    2 * this.donutOuterRadius
+                );
             }
         }
     }

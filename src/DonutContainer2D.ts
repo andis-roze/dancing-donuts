@@ -29,13 +29,15 @@ export class DonutContainer2D extends AbstractDonutContainer {
                 );
                 this.ctx.rotate(donutState.rotationAngle);
                 this.ctx.drawImage(
-                    this.donut.draw({
-                        ...donutState,
-                        innerRadius: this.donutInnerRadius,
-                        outerRadius: this.donutOuterRadius,
-                    }),
+                    this.sprites,
+                    2 * x * this.donutOuterRadius,
+                    2 * y * this.donutOuterRadius,
+                    2 * this.donutOuterRadius,
+                    2 * this.donutOuterRadius,
                     -this.donutOuterRadius,
-                    -this.donutOuterRadius
+                    -this.donutOuterRadius,
+                    2 * this.donutOuterRadius,
+                    2 * this.donutOuterRadius
                 );
                 this.ctx.restore();
             });

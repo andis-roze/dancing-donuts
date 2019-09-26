@@ -83,5 +83,5 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleButton = document.getElementById("toggleButton");
     toggleButton!.addEventListener("click", toggleButtonClick);
     canvasContainer = document.getElementById("canvasContainer");
-    start3D();
+    start2D();
 });
