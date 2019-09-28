@@ -4,6 +4,7 @@ export interface DonutProps {
     endAngle: number;
     innerRadius: number;
     outerRadius: number;
+    border: number;
 }
 
 export class Donut {
@@ -14,11 +15,13 @@ export class Donut {
     private endAngle: number;
     private innerRadius: number;
     private outerRadius: number;
+    private border: number;
 
     constructor(props: DonutProps) {
         this.canvas = document.createElement("canvas");
+        this.border = props.border;
         const ctx = this.canvas.getContext("2d");
-        const width = 2 * props.outerRadius;
+        const width = 2 * (props.outerRadius + this.border);
 
         if (!ctx) {
             throw new Error("Canvas 2d rendering context failed to initialise!");
@@ -42,7 +45,9 @@ export class Donut {
 
         this.ctx.strokeStyle = "black";
         this.ctx.fillStyle = this.color;
+        this.ctx.lineWidth = this.border;
         this.ctx.beginPath();
+        this.ctx.translate(this.border, this.border);
         // Outer arc: counter clockwise
         this.ctx.arc(
             this.outerRadius,

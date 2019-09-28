@@ -43,6 +43,7 @@ export abstract class AbstractDonutContainer implements DonutContainer {
     protected donutInnerRadius: number;
     protected sprites: HTMLCanvasElement;
     protected spritesCtx: CanvasRenderingContext2D;
+    protected border = 1;
 
     public constructor(props: DonutContainerProps) {
         this.canvas = props.canvas;
@@ -52,7 +53,7 @@ export abstract class AbstractDonutContainer implements DonutContainer {
         this.donutOuterRadius = props.donutOuterRadius || 25;
         this.donutInnerRadius = props.donutInnerRadius || 10;
 
-        const donutDiameter = 2 * this.donutOuterRadius;
+        const donutDiameter = 2 * (this.donutOuterRadius + this.border);
         const canvasWidth = `${this.donutCountX * donutDiameter}`;
         const canvasHeight = `${this.donutCountY * donutDiameter}`;
 
@@ -87,6 +88,7 @@ export abstract class AbstractDonutContainer implements DonutContainer {
         delete this.donutCountY;
         delete this.donutInnerRadius;
         delete this.donutOuterRadius;
+        delete this.border;
     }
 
     public abstract draw(step: number): void;
@@ -105,6 +107,7 @@ export abstract class AbstractDonutContainer implements DonutContainer {
                     endAngle,
                     innerRadius: this.donutInnerRadius,
                     outerRadius: this.donutOuterRadius,
+                    border: this.border,
                 });
                 this.donuts[x][y] = {
                     color,
@@ -122,8 +125,8 @@ export abstract class AbstractDonutContainer implements DonutContainer {
                     donut.getSprite(),
                     0,
                     0,
-                    2 * this.donutOuterRadius,
-                    2 * this.donutOuterRadius,
+                    2 * (this.donutOuterRadius + this.border),
+                    2 * (this.donutOuterRadius + this.border),
                     2 * x * this.donutOuterRadius,
                     2 * y * this.donutOuterRadius,
                     2 * this.donutOuterRadius,
