@@ -43,7 +43,8 @@ export abstract class AbstractDonutContainer implements DonutContainer {
     protected donutInnerRadius: number;
     protected sprites: HTMLCanvasElement;
     protected spritesCtx: CanvasRenderingContext2D;
-    protected border = 1;
+    // protected donutHitEvent = createNewEvent("donutHit");
+    protected border = 2; // TODO: find out why inreased border increases margins!
 
     public constructor(props: DonutContainerProps) {
         this.canvas = props.canvas;
@@ -152,6 +153,11 @@ export abstract class AbstractDonutContainer implements DonutContainer {
         if (this.isDonutHit(donutState, clickCoords)) {
             donutState.clockwise = -1 * donutState.clockwise as ClockWise;
             donutState.color = getRandomColor();
+            // TODO: Ugly hack. Try to come up with better approach to change 2D donut color
+            window.dispatchEvent(new CustomEvent<Coords>(
+                "donutHit",
+                { detail: { x: donutCoords.x, y: donutCoords.y } }
+            ));
         }
     }
 

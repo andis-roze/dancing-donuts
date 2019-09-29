@@ -1,5 +1,7 @@
 import { AbstractDonutContainer, DonutContainerProps } from "./common/AbstractDonutContainer";
+import { Donut } from "./common/Donut";
 import { reduceAngle } from "./utils";
+import { Coords } from "./common/types";
 
 export class DonutContainer2D extends AbstractDonutContainer {
     protected ctx: CanvasRenderingContext2D;
@@ -13,6 +15,9 @@ export class DonutContainer2D extends AbstractDonutContainer {
         }
 
         this.ctx = ctx;
+        // TODO: Ugly hack. Try to come up with better approach to change 2D donut color
+        // @ts-ignore
+        window.addEventListener("donutHit", this.donutHit);
     }
 
     public draw(step: number): void {
@@ -42,5 +47,29 @@ export class DonutContainer2D extends AbstractDonutContainer {
                 this.ctx.restore();
             });
         });
+    }
+
+    private donutHit = (e: CustomEvent<Coords>) => {
+        const { x, y } = e.detail;
+        const { color, startAngle, endAngle } = this.donuts[x][y];
+        const donut = new Donut({
+            color,
+            startAngle,
+            endAngle,
+            innerRadius: this.donutInnerRadius,
+            outerRadius: this.donutOuterRadius,
+            border: this.border,
+        });
+        this.spritesCtx.drawImage(
+            donut.getSprite(),
+            0,
+            0,
+            2 * (this.donutOuterRadius + this.border),
+            2 * (this.donutOuterRadius + this.border),
+            2 * x * this.donutOuterRadius,
+            2 * y * this.donutOuterRadius,
+            2 * this.donutOuterRadius,
+            2 * this.donutOuterRadius
+        );
     }
 }

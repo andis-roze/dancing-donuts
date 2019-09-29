@@ -40,6 +40,11 @@ export class Donut {
 
     public getSprite = () => this.canvas;
 
+    public setColor = (color: string) => {
+        this.color = color;
+        return this.draw();
+    }
+
     private draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
