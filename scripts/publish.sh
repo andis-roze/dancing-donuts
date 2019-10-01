@@ -1,10 +1,10 @@
 #!/bin/bash
 
 git checkout gh-pages
-git rebase master
+git rebase webgl-ng
 yarn dist:dev
 cp ./dist/* ./
 git add .
 git commit --amend
 git please
-git checkout master
+git checkout webgl-ng
