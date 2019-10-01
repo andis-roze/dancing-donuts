@@ -46,14 +46,16 @@ export class Donut {
     }
 
     private draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(-1, -1, this.canvas.width + 1, this.canvas.height + 1);
+        // Reset current transformation matrix to the identity matrix
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 
         this.ctx.strokeStyle = "black";
         this.ctx.fillStyle = this.color;
         this.ctx.lineWidth = this.border;
         this.ctx.beginPath();
         this.ctx.translate(this.border, this.border);
-        // Outer arc: counter clockwise
+        // Outer arc: clockwise
         this.ctx.arc(
             this.outerRadius,
             this.outerRadius,
@@ -62,7 +64,7 @@ export class Donut {
             this.endAngle,
             false
             );
-        // Inner arc: clockwise
+        // Inner arc: counter clockwise
         this.ctx.arc(
             this.outerRadius,
             this.outerRadius,

@@ -1,5 +1,4 @@
 import { AbstractDonutContainer, DonutContainerProps } from "./common/AbstractDonutContainer";
-import { Donut } from "./common/Donut";
 import { reduceAngle } from "./utils";
 import { Coords } from "./common/types";
 
@@ -29,20 +28,20 @@ export class DonutContainer2D extends AbstractDonutContainer {
                 );
                 this.ctx.save();
                 this.ctx.translate(
-                    (2 * x + 1) * this.donutOuterRadius,
-                    (2 * y + 1) * this.donutOuterRadius
+                    donutState.center.x,
+                    donutState.center.y
                 );
                 this.ctx.rotate(donutState.rotationAngle);
                 this.ctx.drawImage(
                     this.sprites,
-                    2 * x * this.donutOuterRadius,
-                    2 * y * this.donutOuterRadius,
-                    2 * this.donutOuterRadius,
-                    2 * this.donutOuterRadius,
-                    -this.donutOuterRadius,
-                    -this.donutOuterRadius,
-                    2 * this.donutOuterRadius,
-                    2 * this.donutOuterRadius
+                    x * this.donutWidth + (x + 1) * this.margin,
+                    y * this.donutWidth + (y + 1) * this.margin,
+                    this.donutWidth,
+                    this.donutWidth,
+                    x * this.donutWidth - donutState.center.x + (x + 1) * this.margin,
+                    y * this.donutWidth - donutState.center.y + (y + 1) * this.margin,
+                    this.donutWidth,
+                    this.donutWidth
                 );
                 this.ctx.restore();
             });
@@ -51,25 +50,24 @@ export class DonutContainer2D extends AbstractDonutContainer {
 
     private donutHit = (e: CustomEvent<Coords>) => {
         const { x, y } = e.detail;
-        const { color, startAngle, endAngle } = this.donuts[x][y];
-        const donut = new Donut({
-            color,
-            startAngle,
-            endAngle,
-            innerRadius: this.donutInnerRadius,
-            outerRadius: this.donutOuterRadius,
-            border: this.border,
-        });
+        const { donut, color } = this.donuts[x][y];
+        donut.setColor(color);
+        this.spritesCtx.clearRect(
+            x * this.donutWidth + (x + 1) * this.margin,
+            y * this.donutWidth + (y + 1) * this.margin,
+            this.donutWidth,
+            this.donutWidth
+        );
         this.spritesCtx.drawImage(
             donut.getSprite(),
             0,
             0,
-            2 * (this.donutOuterRadius + this.border),
-            2 * (this.donutOuterRadius + this.border),
-            2 * x * this.donutOuterRadius,
-            2 * y * this.donutOuterRadius,
-            2 * this.donutOuterRadius,
-            2 * this.donutOuterRadius
+            this.donutWidth,
+            this.donutWidth,
+            x * this.donutWidth + (x + 1) * this.margin,
+            y * this.donutWidth + (y + 1) * this.margin,
+            this.donutWidth,
+            this.donutWidth,
         );
     }
 }

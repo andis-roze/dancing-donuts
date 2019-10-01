@@ -1,9 +1,10 @@
 import { AbstractDonutContainer, DonutContainerProps } from "./common/AbstractDonutContainer";
 import {
     m3,
-    // isPowerOf2,
+    isPowerOf2,
     reduceAngle,
     splitHexColor,
+    mapValueToInterval,
  } from "./utils";
 import { BasicShader } from "./shaders/basic/BasicShader";
 
@@ -16,9 +17,10 @@ export class DonutContainer3D extends AbstractDonutContainer {
     private colorUniformLocation!: WebGLUniformLocation;
     private textureCoordAttributeLocation!: number;
     private samplerUniformLocation!: WebGLUniformLocation;
-    private donutBuffer!: WebGLBuffer;
+    private positionBuffer!: WebGLBuffer;
+    private texCoordBuffer!: WebGLBuffer;
     private initialRotation = 0;
-    // private texture: WebGLTexture;
+    private texture!: WebGLTexture;
 
     public constructor(props: DonutContainerProps) {
         super(props);
@@ -28,18 +30,11 @@ export class DonutContainer3D extends AbstractDonutContainer {
             throw new Error("Canvas WebGL rendering context failed to initialise!");
         }
 
-        const texture = ctx.createTexture();
-
-        if (!texture) {
-            throw new Error("Texture failed to initialise!");
-        }
-
         this.ctx = ctx;
-        // this.texture = texture;
         this.initCanvas(this.canvas);
         this.initShader();
-        this.initTexture(0, 0);
-        this.initBuffers();
+        this.initTextureCoords();
+        this.initPositionCoords();
     }
 
     public draw(step: number): void {
@@ -134,65 +129,135 @@ export class DonutContainer3D extends AbstractDonutContainer {
         this.samplerUniformLocation = this.shader.getUniformLocation("uSampler");
     }
 
-    private initTexture(x: number, y: number) {
-        // TODO: !!!
-        // const image = this.donut.draw({
-        //     ...this.donuts[x][y],
-        //     innerRadius: this.donutInnerRadius,
-        //     outerRadius: this.donutOuterRadius,
-        // });
-        // this.ctx.bindTexture(this.ctx.TEXTURE_2D, this.texture);
-        // this.ctx.texImage2D(
-        //     this.ctx.TEXTURE_2D,
-        //     0,
-        //     this.ctx.RGBA,
-        //     this.ctx.RGBA,
-        //     this.ctx.UNSIGNED_BYTE,
-        //     image
-        // );
+    private initTextureCoords() {
+        const texture = this.ctx.createTexture();
 
-        // if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
-        //     this.ctx.generateMipmap(this.ctx.TEXTURE_2D);
-        // } else {
-        //     this.ctx.texParameteri(
-        //         this.ctx.TEXTURE_2D,
-        //         this.ctx.TEXTURE_WRAP_S,
-        //         this.ctx.CLAMP_TO_EDGE
-        //     );
-        //     this.ctx.texParameteri(
-        //         this.ctx.TEXTURE_2D,
-        //         this.ctx.TEXTURE_WRAP_T,
-        //         this.ctx.CLAMP_TO_EDGE
-        //     );
-        //     this.ctx.texParameteri(
-        //         this.ctx.TEXTURE_2D,
-        //         this.ctx.TEXTURE_MIN_FILTER,
-        //         this.ctx.LINEAR
-        //     );
-        // }
-    }
-
-    private initBuffers() {
-        const donutBuffer = this.ctx.createBuffer();
-
-        if (!donutBuffer) {
-            throw new Error("Donut buffer failed to initialise!");
+        if (!texture) {
+            throw new Error("Texture failed to initialise!");
         }
 
-        this.donutBuffer = donutBuffer;
+        this.texture = texture;
+        const texCoordBuffer = this.ctx.createBuffer();
+        const texCoords: number[] = [];
+
+        if (!texCoordBuffer) {
+            throw new Error("Texture coordinate buffer failed to initialise!");
+        }
+
+        this.texCoordBuffer = texCoordBuffer;
         this.ctx.bindBuffer(
             this.ctx.ARRAY_BUFFER,
-            this.donutBuffer
+            this.texCoordBuffer
         );
-        this.setGeometry(0.0, 0.0);
+        // TODO: init tex coord buffer
+        const margin = mapValueToInterval(this.margin, 0, this.canvas.width, 0, 1);
+        const width = mapValueToInterval(this.donutWidth, 0, this.canvas.width, 0, 1);
 
-        /* -------------- RECTANGLE -------------- */
+        // for (let x = 0; x < this.donutCountX; x++) {
+        //     for (let y = 0; y < this.donutCountY; y++) {
+        texCoords.push(
+            margin, margin,
+            width, margin,
+            margin, width,
+            margin, width,
+            width, margin,
+            width, width
+        );
+        //     }
+        // }
+
+        this.ctx.bufferData(
+            this.ctx.ARRAY_BUFFER,
+            new Float32Array(texCoords),
+            this.ctx.STATIC_DRAW
+        );
+
+        this.ctx.vertexAttribPointer(
+            this.textureCoordAttributeLocation,
+            2,
+            this.ctx.FLOAT,
+            false,
+            0,
+            0
+        );
+        this.ctx.enableVertexAttribArray(
+            this.textureCoordAttributeLocation
+        );
+
+        this.ctx.activeTexture(this.ctx.TEXTURE0);
+        this.ctx.uniform1i(this.samplerUniformLocation, 0);
+        this.ctx.uniform4f(
+            this.colorUniformLocation,
+            Math.random(),
+            Math.random(),
+            Math.random(),
+            1
+        );
+        this.ctx.bindTexture(this.ctx.TEXTURE_2D, this.texture);
+        this.ctx.texImage2D(
+            this.ctx.TEXTURE_2D,
+            0,
+            this.ctx.RGBA,
+            this.ctx.RGBA,
+            this.ctx.UNSIGNED_BYTE,
+            this.sprites
+        );
+
+        if (isPowerOf2(this.sprites.width) && isPowerOf2(this.sprites.height)) {
+            this.ctx.generateMipmap(this.ctx.TEXTURE_2D);
+        } else {
+            this.ctx.texParameteri(
+                this.ctx.TEXTURE_2D,
+                this.ctx.TEXTURE_WRAP_S,
+                this.ctx.CLAMP_TO_EDGE
+            );
+            this.ctx.texParameteri(
+                this.ctx.TEXTURE_2D,
+                this.ctx.TEXTURE_WRAP_T,
+                this.ctx.CLAMP_TO_EDGE
+            );
+            this.ctx.texParameteri(
+                this.ctx.TEXTURE_2D,
+                this.ctx.TEXTURE_MIN_FILTER,
+                this.ctx.LINEAR
+            );
+        }
+    }
+
+    private initPositionCoords() {
+        const x1 = this.margin;
+        const x2 = this.margin + this.donutWidth;
+        const y1 = this.margin;
+        const y2 = this.margin + this.donutWidth;
+        const positionBuffer = this.ctx.createBuffer();
+
+        if (!positionBuffer) {
+            throw new Error("Position buffer failed to initialise!");
+        }
+
+        this.positionBuffer = positionBuffer;
+        this.ctx.bindBuffer(
+            this.ctx.ARRAY_BUFFER,
+            this.positionBuffer
+        );
+        this.ctx.bufferData(
+            this.ctx.ARRAY_BUFFER,
+            new Float32Array([
+                x1,  y1,
+                x2,  y1,
+                x1,  y2,
+                x1,  y2,
+                x2,  y1,
+                x2,  y2,
+            ]),
+            this.ctx.STATIC_DRAW
+        );
         this.ctx.vertexAttribPointer(
             this.positionAttributeLocation,
             2,
             this.ctx.FLOAT,
             false,
-            4 * 4,
+            2 * 4,
             0
         );
         this.ctx.enableVertexAttribArray(
@@ -210,48 +275,6 @@ export class DonutContainer3D extends AbstractDonutContainer {
             this.rotationUniformLocation,
             false,
             m3.rotation(this.initialRotation)
-        );
-
-        /* -------------- TEXTURE -------------- */
-        this.ctx.vertexAttribPointer(
-            this.textureCoordAttributeLocation,
-            2,
-            this.ctx.FLOAT,
-            false,
-            4 * 4,
-            2 * 4
-        );
-        this.ctx.enableVertexAttribArray(
-            this.textureCoordAttributeLocation
-        );
-        this.ctx.activeTexture(this.ctx.TEXTURE0);
-        this.ctx.uniform1i(this.samplerUniformLocation, 0);
-        this.ctx.uniform4f(
-            this.colorUniformLocation,
-            Math.random(),
-            Math.random(),
-            Math.random(),
-            1
-        );
-    }
-
-    private setGeometry(x: number, y: number): void {
-        const donutDiameter = 2 * this.donutOuterRadius;
-        const x1 = x;
-        const x2 = x + donutDiameter;
-        const y1 = y;
-        const y2 = y + donutDiameter;
-        this.ctx.bufferData(
-            this.ctx.ARRAY_BUFFER,
-            new Float32Array([
-                x1,  y1, 0.0, 0.0,
-                x2,  y1, 1.0, 0.0,
-                x1,  y2, 0.0, 1.0,
-                x1,  y2, 0.0, 1.0,
-                x2,  y1, 1.0, 0.0,
-                x2,  y2, 1.0, 1.0
-            ]),
-            this.ctx.STATIC_DRAW
         );
     }
 }

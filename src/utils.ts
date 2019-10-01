@@ -1,6 +1,10 @@
 import { ClockWise, Coords } from "./common/types";
 
-function mapValueToInterval(
+export function roundToDecimals(value: number, decimals: number): number {
+    return Math.floor(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+}
+
+export function mapValueToInterval(
     val: number,
     fromStart: number,
     fromEnd: number,

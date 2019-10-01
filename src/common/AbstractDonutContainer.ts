@@ -11,9 +11,11 @@ import {
 import { Donut } from "./Donut";
 
 export interface DonutState {
+    donut: Donut;
     color: string;
     startAngle: number;
     endAngle: number;
+    segmentAngle: number;
     clockwise: ClockWise;
     rotationAngle: number;
     center: Coords;
@@ -43,8 +45,9 @@ export abstract class AbstractDonutContainer implements DonutContainer {
     protected donutInnerRadius: number;
     protected sprites: HTMLCanvasElement;
     protected spritesCtx: CanvasRenderingContext2D;
-    // protected donutHitEvent = createNewEvent("donutHit");
-    protected border = 2; // TODO: find out why inreased border increases margins!
+    protected border = 1;
+    protected donutWidth: number;
+    protected margin = 1;
 
     public constructor(props: DonutContainerProps) {
         this.canvas = props.canvas;
@@ -53,10 +56,16 @@ export abstract class AbstractDonutContainer implements DonutContainer {
         this.donutCountY = props.donutCountY || 20;
         this.donutOuterRadius = props.donutOuterRadius || 25;
         this.donutInnerRadius = props.donutInnerRadius || 10;
+        this.donutWidth = 2 * (this.donutOuterRadius + this.border);
 
-        const donutDiameter = 2 * (this.donutOuterRadius + this.border);
-        const canvasWidth = `${this.donutCountX * donutDiameter}`;
-        const canvasHeight = `${this.donutCountY * donutDiameter}`;
+        const canvasWidth = `${
+            this.donutCountX * this.donutWidth
+            + this.donutCountX * this.margin
+        }`;
+        const canvasHeight = `${
+            this.donutCountY * this.donutWidth
+            + this.donutCountY * this.margin
+        }`;
 
         this.canvas.setAttribute("width", canvasWidth);
         this.canvas.setAttribute("height", canvasHeight);
@@ -90,6 +99,7 @@ export abstract class AbstractDonutContainer implements DonutContainer {
         delete this.donutInnerRadius;
         delete this.donutOuterRadius;
         delete this.border;
+        delete this.donutWidth;
     }
 
     public abstract draw(step: number): void;
@@ -101,7 +111,8 @@ export abstract class AbstractDonutContainer implements DonutContainer {
                 const color = getRandomColor();
                 const rotationAngle = 0;
                 const startAngle = getRandomArbitrary(0, 1.75 * Math.PI);
-                const endAngle = startAngle + getRandomArbitrary(Math.PI / 2, 1.75 * Math.PI);
+                const segmentAngle = getRandomArbitrary(Math.PI / 2, 1.75 * Math.PI);
+                const endAngle = reduceAngle(startAngle + segmentAngle);
                 const donut = new Donut({
                     color,
                     startAngle,
@@ -111,14 +122,16 @@ export abstract class AbstractDonutContainer implements DonutContainer {
                     border: this.border,
                 });
                 this.donuts[x][y] = {
+                    donut,
                     color,
                     clockwise: getRandomDirection(),
                     rotationAngle,
                     startAngle,
                     endAngle,
+                    segmentAngle,
                     center: {
-                        x: (2 * x + 1) * this.donutOuterRadius,
-                        y: (2 * y + 1) * this.donutOuterRadius,
+                        x: (2 * x + 1) * this.donutWidth / 2 + (x + 1) * this.margin,
+                        y: (2 * y + 1) * this.donutWidth / 2 + (y + 1) * this.margin,
                     },
                 };
 
@@ -126,12 +139,12 @@ export abstract class AbstractDonutContainer implements DonutContainer {
                     donut.getSprite(),
                     0,
                     0,
-                    2 * (this.donutOuterRadius + this.border),
-                    2 * (this.donutOuterRadius + this.border),
-                    2 * x * this.donutOuterRadius,
-                    2 * y * this.donutOuterRadius,
-                    2 * this.donutOuterRadius,
-                    2 * this.donutOuterRadius
+                    this.donutWidth,
+                    this.donutWidth,
+                    x * this.donutWidth + (x + 1) * this.margin,
+                    y * this.donutWidth + (y + 1) * this.margin,
+                    this.donutWidth,
+                    this.donutWidth,
                 );
             }
         }
@@ -163,29 +176,25 @@ export abstract class AbstractDonutContainer implements DonutContainer {
 
     private getDonutCoords(coords: Coords): Coords {
         return {
-            x: Math.floor(coords.x / 2 / this.donutOuterRadius),
-            y: Math.floor(coords.y / 2 / this.donutOuterRadius),
+            x: Math.floor(coords.x / (this.donutWidth + this.margin)),
+            y: Math.floor(coords.y / (this.donutWidth +  this.margin)),
         };
     }
 
     private isDonutHit(donutState: DonutState, clickCoords: Coords): boolean {
-        const { center, rotationAngle } = donutState;
+        const { center, rotationAngle, segmentAngle } = donutState;
+        const clickDistance = getDistance(center, clickCoords);
+        const clickAngle = atan2Arc(getAngle(center, clickCoords));
         let { startAngle, endAngle } = donutState;
 
-        startAngle = reduceAngle(startAngle + rotationAngle);
-        endAngle = reduceAngle(endAngle + rotationAngle);
+        startAngle = reduceAngle(startAngle + rotationAngle + 2 * Math.PI);
+        endAngle = reduceAngle(endAngle + rotationAngle + 2 * Math.PI);
 
-        const clickDistance = getDistance(center, clickCoords);
-        const startIsBigger = startAngle > endAngle;
-        let clickAngle = atan2Arc(getAngle(center, clickCoords));
-
-        clickAngle = startIsBigger && clickAngle < endAngle
-            ? 2 * Math.PI + clickAngle
-            : clickAngle;
+        const clickToEndSegmentAngle = reduceAngle(endAngle + 2 * Math.PI - clickAngle);
 
         return this.donutInnerRadius <= clickDistance
             && this.donutOuterRadius >= clickDistance
-            && clickAngle >= startAngle
-            && clickAngle <= (startIsBigger ? 2 * Math.PI + endAngle : endAngle);
+            && clickToEndSegmentAngle >= 0
+            && clickToEndSegmentAngle <= segmentAngle;
     }
 }
