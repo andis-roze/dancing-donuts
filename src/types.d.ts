@@ -3,7 +3,7 @@ declare module "*.glsl" {
     export = t;
 }
 
-declare module "!raw-loader!*" {
+declare module "raw-loader!*" {
     var t: string;
     export = t;
 }

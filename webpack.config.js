@@ -1,6 +1,7 @@
 const path = require("path");
 const Webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = env => {
     return {
@@ -22,7 +23,10 @@ module.exports = env => {
                 title: "Dancing donuts",
                 template: "./src/index.html",
                 filename: "./index.html"
-            })
+            }),
+            new CopyPlugin([
+                { from: "./src/background.jpg", to: "./", flatten: true },
+            ]),
        ],
         resolve: {
             extensions: [ ".ts", ".js" ],
@@ -32,7 +36,8 @@ module.exports = env => {
             path: path.resolve(__dirname, "dist")
         },
         devServer: {
-            contentBase: path.join(__dirname, "dist")
+            contentBase: path.join(__dirname, "dist"),
+            host: "0.0.0.0"
         }
     };
 };

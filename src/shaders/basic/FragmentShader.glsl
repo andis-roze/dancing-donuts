@@ -1,6 +1,6 @@
 varying highp vec2 vTextureCoord;
 
-uniform sampler2D uSampler;
+uniform highp sampler2D uSampler;
 uniform highp vec4 uColor;
 
 void main(void) {

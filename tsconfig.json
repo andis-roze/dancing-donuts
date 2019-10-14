@@ -8,13 +8,14 @@
     "noUnusedLocals": true,
     "pretty": true,
     "strictNullChecks": true,
-    "allowSyntheticDefaultImports": false,
+    "allowSyntheticDefaultImports": true,
     "suppressImplicitAnyIndexErrors": false,
     "allowJs": false,
     "lib": ["es6", "dom"],
     "target": "es5",
     "newLine": "LF",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "strict": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
