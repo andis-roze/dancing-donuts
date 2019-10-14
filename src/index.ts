@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         canvas = document.createElement("canvas");
+        canvas.classList.add("donut-canvas");
 
         canvasContainer.appendChild(canvas);
     }
