@@ -1,4 +1,50 @@
-import { ClockWise, Coords } from "./common/types";
+import { ClockWise, Coords, DonutState } from "./common/types";
+
+export function drawDonut(
+    ctx: CanvasRenderingContext2D,
+    donutState: DonutState,
+) {
+    const donutWidth = 2 * (donutState.outerRadius + donutState.border);
+
+    // Reset current transformation matrix to the identity matrix
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(
+        donutState.coords.x * donutWidth + donutState.coords.x * donutState.margin,
+        donutState.coords.y * donutWidth + donutState.coords.y * donutState.margin,
+        donutWidth,
+        donutWidth
+    );
+
+    ctx.strokeStyle = "black";
+    ctx.fillStyle = donutState.color;
+    ctx.lineWidth = donutState.border;
+    ctx.beginPath();
+    ctx.translate(
+        donutState.coords.x * donutWidth + (donutState.coords.x + 1) * donutState.margin,
+        donutState.coords.y * donutWidth + (donutState.coords.y + 1) * donutState.margin
+    );
+    // Outer arc: clockwise
+    ctx.arc(
+        donutState.outerRadius,
+        donutState.outerRadius,
+        donutState.outerRadius,
+        donutState.startAngle,
+        donutState.endAngle,
+        false
+        );
+    // Inner arc: counter clockwise
+    ctx.arc(
+        donutState.outerRadius,
+        donutState.outerRadius,
+        donutState.innerRadius,
+        donutState.endAngle,
+        donutState.startAngle,
+        true
+        );
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+}
 
 export function roundToDecimals(value: number, decimals: number): number {
     return Math.floor(value * Math.pow(10, decimals)) / Math.pow(10, decimals);

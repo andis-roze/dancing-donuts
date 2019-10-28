@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let lastRender = performance.now();
         let lastFpsUpdate = lastRender;
 
+        cancelAnimationFrame(animationFrameId);
         const renderLoop = (time: number) => {
             if (!donutContainer) {
                 throw new Error("Missing donut container!");
@@ -91,8 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const elDonutCount = document.getElementById("donutCount") as HTMLSelectElement;
 
     function toggleButtonClick(e: MouseEvent) {
-        cancelAnimationFrame(animationFrameId);
-
         if (toggleButton!.innerText === getText(ContainerType.CONTEXT_2D)) {
             toggleButton!.innerText = getText(ContainerType.CONTEXT_3D);
             start(ContainerType.CONTEXT_2D, parseInt(elDonutCount!.value, 10));

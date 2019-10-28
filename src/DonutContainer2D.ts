@@ -1,5 +1,5 @@
 import { AbstractDonutContainer, DonutContainerProps } from "./common/AbstractDonutContainer";
-import { reduceAngle } from "./utils";
+import { reduceAngle, drawDonut } from "./utils";
 import { Coords } from "./common/types";
 
 export class DonutContainer2D extends AbstractDonutContainer {
@@ -34,8 +34,8 @@ export class DonutContainer2D extends AbstractDonutContainer {
                 this.ctx.rotate(donutState.rotationAngle);
                 this.ctx.drawImage(
                     this.sprites,
-                    x * this.donutWidth + (x + 1) * this.margin,
-                    y * this.donutWidth + (y + 1) * this.margin,
+                    x * this.donutWidth + x * this.margin,
+                    y * this.donutWidth + y * this.margin,
                     this.donutWidth,
                     this.donutWidth,
                     x * this.donutWidth - donutState.center.x + (x + 1) * this.margin,
@@ -50,24 +50,9 @@ export class DonutContainer2D extends AbstractDonutContainer {
 
     private donutHit = (e: CustomEvent<Coords>) => {
         const { x, y } = e.detail;
-        const { donut, color } = this.donuts[x][y];
-        donut.setColor(color);
-        this.spritesCtx.clearRect(
-            x * this.donutWidth + (x + 1) * this.margin,
-            y * this.donutWidth + (y + 1) * this.margin,
-            this.donutWidth,
-            this.donutWidth
-        );
-        this.spritesCtx.drawImage(
-            donut.getSprite(),
-            0,
-            0,
-            this.donutWidth,
-            this.donutWidth,
-            x * this.donutWidth + (x + 1) * this.margin,
-            y * this.donutWidth + (y + 1) * this.margin,
-            this.donutWidth,
-            this.donutWidth,
+        drawDonut(
+            this.spritesCtx,
+            this.donuts[x][y]
         );
     }
 }

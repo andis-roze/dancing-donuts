@@ -1,4 +1,4 @@
-import { Coords, ClockWise } from "./types";
+import { Coords, ClockWise, DonutState } from "./types";
 import {
     getRandomDirection,
     getRandomArbitrary,
@@ -7,19 +7,8 @@ import {
     atan2Arc,
     getAngle,
     reduceAngle,
+    drawDonut,
 } from "../utils";
-import { Donut } from "./Donut";
-
-export interface DonutState {
-    donut: Donut;
-    color: string;
-    startAngle: number;
-    endAngle: number;
-    segmentAngle: number;
-    clockwise: ClockWise;
-    rotationAngle: number;
-    center: Coords;
-}
 
 export interface DonutContainer {
     destructor(): void;
@@ -113,16 +102,15 @@ export abstract class AbstractDonutContainer implements DonutContainer {
                 const startAngle = getRandomArbitrary(0, 1.75 * Math.PI);
                 const segmentAngle = getRandomArbitrary(Math.PI / 2, 1.75 * Math.PI);
                 const endAngle = reduceAngle(startAngle + segmentAngle);
-                const donut = new Donut({
-                    color,
-                    startAngle,
-                    endAngle,
-                    innerRadius: this.donutInnerRadius,
-                    outerRadius: this.donutOuterRadius,
-                    border: this.border,
-                });
                 this.donuts[x][y] = {
-                    donut,
+                    coords: {
+                        x,
+                        y,
+                    },
+                    border: this.border,
+                    margin: this.margin,
+                    outerRadius: this.donutOuterRadius,
+                    innerRadius: this.donutInnerRadius,
                     color,
                     clockwise: getRandomDirection(),
                     rotationAngle,
@@ -135,16 +123,9 @@ export abstract class AbstractDonutContainer implements DonutContainer {
                     },
                 };
 
-                this.spritesCtx.drawImage(
-                    donut.getSprite(),
-                    0,
-                    0,
-                    this.donutWidth,
-                    this.donutWidth,
-                    x * this.donutWidth + (x + 1) * this.margin,
-                    y * this.donutWidth + (y + 1) * this.margin,
-                    this.donutWidth,
-                    this.donutWidth,
+                drawDonut(
+                    this.spritesCtx,
+                    this.donuts[x][y]
                 );
             }
         }
