@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         animationFrameId = window.requestAnimationFrame(renderLoop);
     }
 
-    const defaultContainer = ContainerType.CONTEXT_2D;
+    const defaultContainer = ContainerType.CONTEXT_3D;
 
     const toggleButton = document.getElementById("toggleButton");
     const elDonutCount = document.getElementById("donutCount") as HTMLSelectElement;
@@ -105,13 +105,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     toggleButton!.innerText = getText(
-        defaultContainer === ContainerType.CONTEXT_2D
+        defaultContainer === ContainerType.CONTEXT_3D
             ? ContainerType.CONTEXT_3D
             : ContainerType.CONTEXT_2D
     );
     toggleButton!.addEventListener("click", toggleButtonClick);
     elDonutCount!.addEventListener("change", (e: any) => {
-        if (toggleButton!.innerText === getText(ContainerType.CONTEXT_2D)) {
+        if (toggleButton!.innerText === getText(ContainerType.CONTEXT_3D)) {
             start(ContainerType.CONTEXT_3D, e.target.value);
         } else {
             start(ContainerType.CONTEXT_2D, e.target.value);
