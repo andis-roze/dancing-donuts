@@ -2,7 +2,6 @@ import { Coords, ClockWise, DonutState } from "./types";
 import {
     getRandomDirection,
     getRandomArbitrary,
-    getRandomColor,
     getDistance,
     atan2Arc,
     getAngle,
@@ -23,6 +22,8 @@ export interface DonutContainerProps {
     donutInnerRadius?: number;
 }
 
+type GetInitialColor = () => string;
+
 export abstract class AbstractDonutContainer implements DonutContainer {
     protected abstract ctx: CanvasRenderingContext2D | WebGLRenderingContext;
     protected donuts: DonutState[][] = [];
@@ -37,8 +38,10 @@ export abstract class AbstractDonutContainer implements DonutContainer {
     protected border = 1;
     protected donutWidth: number;
     protected margin = 1;
+    private getInitialColor: GetInitialColor;
 
-    public constructor(props: DonutContainerProps) {
+    public constructor(props: DonutContainerProps, getInitialColor = () => "#FFFFFF") {
+        this.getInitialColor = getInitialColor;
         this.canvas = props.canvas;
         this.canvasRect = this.canvas.getBoundingClientRect();
         this.donutCountX = props.donutCountX || 20;
@@ -92,13 +95,13 @@ export abstract class AbstractDonutContainer implements DonutContainer {
     }
 
     public abstract draw(step: number): void;
-    protected abstract onDonutHit(coords: Coords): void;
+    protected abstract onDonutHit(donutState: DonutState): void;
 
     private initDonutState() {
         for (let x = 0; x < this.donutCountX; x++) {
             this.donuts[x] = [];
             for (let y = 0; y < this.donutCountY; y++) {
-                const color = getRandomColor();
+                const color = this.getInitialColor();
                 const rotationAngle = 0;
                 const startAngle = getRandomArbitrary(0, 1.75 * Math.PI);
                 const segmentAngle = getRandomArbitrary(Math.PI / 2, 1.75 * Math.PI);
@@ -147,8 +150,7 @@ export abstract class AbstractDonutContainer implements DonutContainer {
 
         if (this.isDonutHit(donutState, clickCoords)) {
             donutState.clockwise = -1 * donutState.clockwise as ClockWise;
-            donutState.color = getRandomColor();
-            this.onDonutHit({ x: donutCoords.x, y: donutCoords.y });
+            this.onDonutHit(donutState);
         }
     }
 

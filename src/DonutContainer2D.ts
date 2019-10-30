@@ -1,12 +1,12 @@
 import { AbstractDonutContainer, DonutContainerProps } from "./common/AbstractDonutContainer";
-import { reduceAngle, drawDonut } from "./utils";
-import { Coords } from "./common/types";
+import { reduceAngle, drawDonut, getRandomColor } from "./utils";
+import { DonutState } from "./common/types";
 
 export class DonutContainer2D extends AbstractDonutContainer {
     protected ctx: CanvasRenderingContext2D;
 
     public constructor(props: DonutContainerProps) {
-        super(props);
+        super(props, getRandomColor);
         const ctx = this.canvas.getContext("2d");
 
         if (!ctx) {
@@ -45,10 +45,13 @@ export class DonutContainer2D extends AbstractDonutContainer {
         });
     }
 
-    protected onDonutHit = (coords: Coords) => {
+    protected onDonutHit = (donutState: DonutState) => {
         drawDonut(
             this.spritesCtx,
-            this.donuts[coords.x][coords.y]
+            {
+                ...donutState,
+                color: getRandomColor(),
+            }
         );
     }
 }

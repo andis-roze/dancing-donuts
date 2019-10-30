@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     toggleButton!.innerText = getText(
         defaultContainer === ContainerType.CONTEXT_3D
-            ? ContainerType.CONTEXT_3D
-            : ContainerType.CONTEXT_2D
+            ? ContainerType.CONTEXT_2D
+            : ContainerType.CONTEXT_3D
     );
     toggleButton!.addEventListener("click", toggleButtonClick);
     elDonutCount!.addEventListener("change", (e: any) => {
