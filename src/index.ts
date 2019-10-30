@@ -64,7 +64,10 @@ document.addEventListener("DOMContentLoaded", () => {
         let lastRender = performance.now();
         let lastFpsUpdate = lastRender;
 
-        cancelAnimationFrame(animationFrameId);
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+
         const renderLoop = (time: number) => {
             if (!donutContainer) {
                 throw new Error("Missing donut container!");

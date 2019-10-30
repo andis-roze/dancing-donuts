@@ -1,3 +1,4 @@
+import { Coords } from "./common/types";
 import { AbstractDonutContainer, DonutContainerProps } from "./common/AbstractDonutContainer";
 import {
     m3,
@@ -83,6 +84,10 @@ export class DonutContainer3D extends AbstractDonutContainer {
                 );
             }
         );
+    }
+
+    protected onDonutHit = (coords: Coords) => {
+        // @@@:TODO:
     }
 
     private initCanvas(canvas: HTMLCanvasElement) {

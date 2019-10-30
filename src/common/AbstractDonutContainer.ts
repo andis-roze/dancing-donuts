@@ -92,6 +92,7 @@ export abstract class AbstractDonutContainer implements DonutContainer {
     }
 
     public abstract draw(step: number): void;
+    protected abstract onDonutHit(coords: Coords): void;
 
     private initDonutState() {
         for (let x = 0; x < this.donutCountX; x++) {
@@ -147,11 +148,7 @@ export abstract class AbstractDonutContainer implements DonutContainer {
         if (this.isDonutHit(donutState, clickCoords)) {
             donutState.clockwise = -1 * donutState.clockwise as ClockWise;
             donutState.color = getRandomColor();
-            // TODO: Ugly hack. Try to come up with better approach to change 2D donut color
-            window.dispatchEvent(new CustomEvent<Coords>(
-                "donutHit",
-                { detail: { x: donutCoords.x, y: donutCoords.y } }
-            ));
+            this.onDonutHit({ x: donutCoords.x, y: donutCoords.y });
         }
     }
 

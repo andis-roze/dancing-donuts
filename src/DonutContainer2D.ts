@@ -14,9 +14,6 @@ export class DonutContainer2D extends AbstractDonutContainer {
         }
 
         this.ctx = ctx;
-        // TODO: Ugly hack. Try to come up with better approach to change 2D donut color
-        // @ts-ignore
-        window.addEventListener("donutHit", this.donutHit);
     }
 
     public draw(step: number): void {
@@ -48,11 +45,10 @@ export class DonutContainer2D extends AbstractDonutContainer {
         });
     }
 
-    private donutHit = (e: CustomEvent<Coords>) => {
-        const { x, y } = e.detail;
+    protected onDonutHit = (coords: Coords) => {
         drawDonut(
             this.spritesCtx,
-            this.donuts[x][y]
+            this.donuts[coords.x][coords.y]
         );
     }
 }
