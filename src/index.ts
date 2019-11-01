@@ -112,9 +112,9 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleButton!.addEventListener("click", toggleButtonClick);
     elDonutCount!.addEventListener("change", (e: any) => {
         if (toggleButton!.innerText === getText(ContainerType.CONTEXT_3D)) {
-            start(ContainerType.CONTEXT_3D, e.target.value);
-        } else {
             start(ContainerType.CONTEXT_2D, e.target.value);
+        } else {
+            start(ContainerType.CONTEXT_3D, e.target.value);
         }
     });
     start(defaultContainer);
